@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { BorderBeam } from "../components/ui/border-beam"
+
 
 export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
@@ -55,7 +57,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card>
+      <Card className="relative overflow-hidden">
         <CardHeader>
           <CardTitle className="text-2xl">Sign up</CardTitle>
           <CardDescription>Create a new account</CardDescription>
@@ -111,6 +113,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
             </div>
           </form>
         </CardContent>
+        <BorderBeam duration={3} size={300} />
       </Card>
     </div>
   )
