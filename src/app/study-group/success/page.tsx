@@ -31,13 +31,13 @@ export default function SuccessPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border">
+      {/* <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2">
             <span className="text-xl font-semibold text-foreground">chills.</span>
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-12">
@@ -47,8 +47,8 @@ export default function SuccessPage() {
               <Check className="h-10 w-10 text-green-500" />
             </div>
 
-            <div className="h-[40rem] flex flex-col justify-center  items-center px-4">
-            <h2 className="mb-10 sm:mb-20 text-xl text-center sm:text-5xl dark:text-white text-black">
+            <div className="h-[20rem] flex flex-col justify-center  items-center px-4">
+            <h2 className="mb-16 sm:mb-30 text-xl text-center sm:text-5xl dark:text-white text-black">
                 Success, Ask ChillBot Anything
             </h2>
             <PlaceholdersAndVanishInput
