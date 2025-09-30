@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link"
+import { useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Check, MessageSquare } from "lucide-react"
 import { PlaceholdersAndVanishInput } from "../../../components/ui/placeholders-and-vanish-input";
+import { Confetti, type ConfettiRef } from "../../../components/ui/confetti"
 
 export default function SuccessPage() {
+    const confettiRef = useRef<ConfettiRef>(null)
     const placeholders = [
         "What's the weighting of this assignment?",
         "When is this due?",
@@ -45,6 +48,13 @@ export default function SuccessPage() {
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-6">
               <Check className="h-10 w-10 text-green-500" />
+              <Confetti
+                ref={confettiRef}
+                className="absolute top-0 left-0 z-0 size-full"
+                onMouseEnter={() => {
+                confettiRef.current?.fire({})
+                }}
+              />
             </div>
 
             <div className="h-[20rem] flex flex-col justify-center  items-center px-4">

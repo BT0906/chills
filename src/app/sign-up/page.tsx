@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
+import { BorderBeam } from "../../components/ui/border-beam"
 
 export default function SignupPage() {
   return (
@@ -60,6 +61,7 @@ export default function SignupPage() {
                 Log in
               </Link>
             </div>
+            <BorderBeam duration={8} size={100} />
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-6">
