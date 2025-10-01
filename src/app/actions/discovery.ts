@@ -64,9 +64,9 @@ export async function findClassmates(userId: string) {
       userEnrolments.filter((e) => e.class === "tut").map((e) => `${e.course}-${e.section}`),
     )
 
-    console.log("User Courses:", userCourses)
-    console.log("User Tutorials:", userTutorials)
-    console.log("All Enrolments:", allEnrolments)
+    // console.log("User Courses:", userCourses)
+    // console.log("User Tutorials:", userTutorials)
+    // console.log("All Enrolments:", allEnrolments)
 
     for (const enrolment of allEnrolments) {
       // Profile fields are flat on the row now (no nested `profile`)

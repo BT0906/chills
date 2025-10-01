@@ -58,7 +58,7 @@ export type Database = {
           class: Database["public"]["Enums"]["class_type"]
           course: string
           end_time: string
-          id: number
+          id?: number
           room_id: string
           section?: string | null
           start_time: string
@@ -136,23 +136,26 @@ export type Database = {
         Row: {
           created_at: string
           squad_id: number
+          status: Database["public"]["Enums"]["member_type"]
           user_id: string
         }
         Insert: {
           created_at?: string
           squad_id: number
+          status?: Database["public"]["Enums"]["member_type"]
           user_id: string
         }
         Update: {
           created_at?: string
           squad_id?: number
+          status?: Database["public"]["Enums"]["member_type"]
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "member_squad_id_fkey"
             columns: ["squad_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "squad"
             referencedColumns: ["id"]
           },
@@ -211,6 +214,7 @@ export type Database = {
           id: string
           last_name: string
           profile_url: string | null
+          user_id: string | null
           zid: string
         }
         Insert: {
@@ -221,9 +225,10 @@ export type Database = {
           first_name: string
           gender?: string | null
           ics_link: string
-          id: string
+          id?: string
           last_name: string
           profile_url?: string | null
+          user_id?: string | null
           zid: string
         }
         Update: {
@@ -237,6 +242,7 @@ export type Database = {
           id?: string
           last_name?: string
           profile_url?: string | null
+          user_id?: string | null
           zid?: string
         }
         Relationships: []
@@ -266,9 +272,9 @@ export type Database = {
           creator_id: string
           description: string | null
           id: number
+          is_deleted: boolean
           name: string
           profile_url: string | null
-          status: Database["public"]["Enums"]["squad_type"]
           visibility: Database["public"]["Enums"]["squad_visibility"]
         }
         Insert: {
@@ -277,9 +283,9 @@ export type Database = {
           creator_id: string
           description?: string | null
           id?: number
+          is_deleted?: boolean
           name: string
           profile_url?: string | null
-          status?: Database["public"]["Enums"]["squad_type"]
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Update: {
@@ -288,9 +294,9 @@ export type Database = {
           creator_id?: string
           description?: string | null
           id?: number
+          is_deleted?: boolean
           name?: string
           profile_url?: string | null
-          status?: Database["public"]["Enums"]["squad_type"]
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Relationships: []
@@ -326,13 +332,47 @@ export type Database = {
           },
         ]
       }
+      student_with_enrolments: {
+        Row: {
+          age: number | null
+          bio: string | null
+          courses: string[] | null
+          created_at: string | null
+          degree: string | null
+          enrolments: Json | null
+          first_name: string | null
+          gender: string | null
+          ics_link: string | null
+          id: string | null
+          last_name: string | null
+          profile_url: string | null
+          user_id: string | null
+          zid: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      create_squad: {
+        Args: {
+          p_course: string
+          p_creator_id: string
+          p_description: string
+          p_name: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
+      get_common_courses: {
+        Args: { user_ids: string[] }
+        Returns: {
+          course: string
+        }[]
+      }
     }
     Enums: {
       class_type: "lec" | "tut" | "lab"
-      squad_type: "pending" | "active" | "deleted"
+      member_type: "pending" | "active" | "left"
       squad_visibility: "open" | "closed"
     }
     CompositeTypes: {
@@ -462,7 +502,7 @@ export const Constants = {
   public: {
     Enums: {
       class_type: ["lec", "tut", "lab"],
-      squad_type: ["pending", "active", "deleted"],
+      member_type: ["pending", "active", "left"],
       squad_visibility: ["open", "closed"],
     },
   },
