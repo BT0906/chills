@@ -334,91 +334,56 @@ revoke truncate on table "public"."squad" from "service_role";
 
 revoke update on table "public"."squad" from "service_role";
 
-alter table "public"."enrolment" drop constraint "enrolment_user_fkey";
-
-alter table "public"."meeting" drop constraint "meeting_creator_fkey";
-
-alter table "public"."meeting" drop constraint "meeting_room_fkey";
-
-alter table "public"."squad" drop constraint "Squad_creator_fkey";
-
-alter table "public"."enrolment" drop constraint "enrolment_room_fkey";
-
-alter table "public"."message" drop constraint "message_sender_fkey";
-
-alter table "public"."room" drop constraint "room_name_key";
-
-alter table "public"."room" drop constraint "room_pkey";
-
-drop index if exists "public"."room_name_key";
-
-drop index if exists "public"."room_pkey";
-
-alter table "public"."enrolment" drop column "user";
-
-alter table "public"."enrolment" add column "user_id" uuid not null;
-
-alter table "public"."meeting" drop column "creator";
-
-alter table "public"."meeting" drop column "room";
-
-alter table "public"."meeting" add column "creator_id" uuid not null;
-
-alter table "public"."meeting" add column "room_id" text;
-
-alter table "public"."message" drop column "sender";
-
-alter table "public"."message" add column "sender_id" uuid not null;
-
-alter table "public"."message" alter column "body" set not null;
-
-alter table "public"."profile" alter column "profile_url" drop not null;
-
-alter table "public"."room" drop column "name";
-
-alter table "public"."room" add column "id" text not null;
-
-alter table "public"."squad" drop column "creator";
-
-alter table "public"."squad" add column "creator_id" uuid not null;
-
-CREATE UNIQUE INDEX member_squad_id_key ON public.member USING btree (squad_id);
-
-CREATE UNIQUE INDEX room_name_key ON public.room USING btree (id);
-
-CREATE UNIQUE INDEX room_pkey ON public.room USING btree (id);
-
-alter table "public"."room" add constraint "room_pkey" PRIMARY KEY using index "room_pkey";
-
-alter table "public"."enrolment" add constraint "enrolment_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON UPDATE CASCADE ON DELETE CASCADE not valid;
-
-alter table "public"."enrolment" validate constraint "enrolment_user_id_fkey";
-
-alter table "public"."meeting" add constraint "meeting_creator_id_fkey" FOREIGN KEY (creator_id) REFERENCES auth.users(id) ON UPDATE CASCADE ON DELETE CASCADE not valid;
-
-alter table "public"."meeting" validate constraint "meeting_creator_id_fkey";
-
-alter table "public"."meeting" add constraint "meeting_room_id_fkey" FOREIGN KEY (room_id) REFERENCES room(id) not valid;
-
-alter table "public"."meeting" validate constraint "meeting_room_id_fkey";
-
-alter table "public"."member" add constraint "member_squad_id_key" UNIQUE using index "member_squad_id_key";
-
-alter table "public"."squad" add constraint "squad_creator_id_fkey" FOREIGN KEY (creator_id) REFERENCES auth.users(id) not valid;
-
-alter table "public"."squad" validate constraint "squad_creator_id_fkey";
-
-alter table "public"."enrolment" add constraint "enrolment_room_fkey" FOREIGN KEY (room) REFERENCES room(id) not valid;
-
-alter table "public"."enrolment" validate constraint "enrolment_room_fkey";
-
-alter table "public"."message" add constraint "message_sender_fkey" FOREIGN KEY (sender_id) REFERENCES auth.users(id) ON UPDATE CASCADE ON DELETE CASCADE not valid;
-
-alter table "public"."message" validate constraint "message_sender_fkey";
-
-alter table "public"."room" add constraint "room_name_key" UNIQUE using index "room_name_key";
+create table "public"."squad_members" (
+    "squad_id" bigint not null,
+    "user_id" uuid not null
+);
 
 
-CREATE TRIGGER trigger_handle_new_user_create_profile AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user_create_profile();
+CREATE UNIQUE INDEX squad_members_pkey ON public.squad_members USING btree (squad_id, user_id);
+
+alter table "public"."squad_members" add constraint "squad_members_pkey" PRIMARY KEY using index "squad_members_pkey";
+
+alter table "public"."squad_members" add constraint "squad_members_squad_id_fkey" FOREIGN KEY (squad_id) REFERENCES squad(id) ON DELETE CASCADE not valid;
+
+alter table "public"."squad_members" validate constraint "squad_members_squad_id_fkey";
+
+alter table "public"."squad_members" add constraint "squad_members_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
+
+alter table "public"."squad_members" validate constraint "squad_members_user_id_fkey";
+
+set check_function_bodies = off;
+
+CREATE OR REPLACE FUNCTION public.create_squad(p_name text, p_description text, p_course text, p_creator_id uuid, p_user_ids uuid[])
+ RETURNS bigint
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_squad_id bigint;
+BEGIN
+    INSERT INTO public.squad(name, description, course, creator_id, visibility, is_deleted)
+    VALUES (p_name, p_description, p_course, p_creator_id, 'open'::public.squad_visibility, FALSE)
+    RETURNING id INTO v_squad_id;
+
+    INSERT INTO public.squad_members(squad_id, user_id)
+    SELECT v_squad_id, unnest(p_user_ids);
+
+    RETURN v_squad_id;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.get_common_courses(user_ids uuid[])
+ RETURNS TABLE(course text)
+ LANGUAGE sql
+AS $function$
+  select course
+  from public.enrolment
+  where user_id = any(user_ids)
+  group by course
+  having count(distinct user_id) = array_length(user_ids, 1);
+$function$
+;
+
 
 

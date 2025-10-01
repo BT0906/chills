@@ -11,8 +11,9 @@ export function useProfile(userId: string | null | undefined) {
       const { data, error } = await supabase
         .from("profile")
         .select("*")
-        .eq("id", userId)
+        .eq("user_id", userId)
         .single();
+      console.log("Fetched profile data:", data, error);
       if (error) throw error;
       return data;
     }
