@@ -225,3 +225,41 @@ export async function findClassmates(userId: string) {
     return { success: false as const, error: "Failed to find classmates" }
   }
 }
+
+export async function getUserCourses(userId: string | undefined) {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("enrolment")
+      .select("course, class, section, start_time, end_time, room_id")
+      .eq("user_id", userId)
+      .order("course", { ascending: true })
+
+    if (error) {
+      console.error("[v0] Error fetching user courses:", error)
+      return { success: false, error: "Failed to fetch courses" }
+    }
+
+    // Group by course
+    const courseMap = new Map<string, any[]>()
+
+    for (const enrolment of data) {
+      if (!courseMap.has(enrolment.course)) {
+        courseMap.set(enrolment.course, [])
+      }
+      courseMap.get(enrolment.course)!.push(enrolment)
+    }
+
+    const courses = Array.from(courseMap.entries()).map(([course, classes]) => ({
+      course,
+      classes,
+      classCount: classes.length,
+    }))
+
+    return { success: true, data: courses }
+  } catch (error) {
+    console.error("[v0] Error fetching user courses:", error)
+    return { success: false, error: "Failed to fetch courses" }
+  }
+}

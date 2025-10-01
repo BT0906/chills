@@ -401,7 +401,7 @@ const SquadFormation = () => {
           <AnimatePresence mode="popLayout">
             {filteredStudents.map((student, index) => (
               <motion.div
-                key={student.zid}
+                key={student.zid + index}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
