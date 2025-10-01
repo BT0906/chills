@@ -1,80 +1,199 @@
-import Link from "next/link"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Users, LogOut, Plus } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { getUserCourses } from "@/app/actions/discovery"
+import { getPendingInvitations } from "@/app/actions/squad"
+import Link from "next/link"
 
 export default function DashboardPage() {
-  const courses = [
-    {
-      code: "COMP1511",
-      name: "Programming Fundamentals",
-      students: 342,
-      color: "bg-blue-500",
-    },
-    {
-      code: "MATH1131",
-      name: "Mathematics 1A",
-      students: 289,
-      color: "bg-green-500",
-    },
-    {
-      code: "PHYS1121",
-      name: "Physics 1A",
-      students: 156,
-      color: "bg-purple-500",
-    },
-  ]
+  const [isLoading, setIsLoading] = useState(true)
+  // const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [courses, setCourses] = useState<any[]>([])
+  const [invitationCount, setInvitationCount] = useState(0)
+  const router = useRouter()
+  const supabase = createClient()
 
-  return (
-    <div className="max-w-5xl mx-auto">
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back, Alex</h1>
-        <p className="text-muted-foreground">Find classmates and form study groups for your courses</p>
-      </div>
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser()
 
-      {/* Courses Grid */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Your Courses</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          {courses.map((course) => (
-            <Link key={course.code} href={`/dashboard/${course.code.toLowerCase()}`} className="group">
-              <div className="bg-card rounded-xl p-6 border border-border hover:border-primary/50 transition-all hover:shadow-md">
-                <div className={`w-4 h-4 rounded-full ${course.color} mb-3`} />
-                <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                  {course.code}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">{course.name}</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>{course.students} students</span>
-                </div>
-              </div>
-            </Link>
-          ))}
+        if (!authUser) {
+          router.push("/login")
+          return
+        }
 
-          <button className="group">
-            <div className="bg-card rounded-xl p-6 border-2 border-dashed border-border hover:border-primary/50 transition-all hover:shadow-md h-full min-h-[180px] flex flex-col items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  Add Course
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">Import from timetable</p>
-              </div>
-            </div>
-          </button>
+        // setUser(authUser)
+
+        // Get profile
+        const { data: profileData } = await supabase.from("profile").select("*").eq("id", authUser.id).single()
+
+        if (!profileData) {
+          router.push("/onboarding")
+          return
+        }
+
+        setProfile(profileData)
+
+        // Get courses
+        const result = await getUserCourses(authUser.id)
+        if (result.success && result.data) {
+          setCourses(result.data)
+        }
+
+        // Get invitation count
+        const invitationsResult = await getPendingInvitations(authUser.id)
+        if (invitationsResult.success && invitationsResult.data) {
+          setInvitationCount(invitationsResult.data.length)
+        }
+      } catch (error) {
+        console.error("[v0] Error loading dashboard:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [router, supabase])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push("/")
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 min-h-screen">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <Skeleton className="h-12 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+          </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Quick Actions */}
-      <div className="bg-muted/30 rounded-2xl p-8 text-center">
-        <h3 className="text-lg font-semibold text-foreground mb-2">Ready to find your study squad?</h3>
-        <p className="text-muted-foreground mb-4">
-          Click on any course above to discover classmates and form groups
-        </p>
-      </div>
+  return (
+    <div className="container mx-auto px-4 py-8 min-h-screen">
+      <header className="border-b bg-white/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Squad Formation</h1>
+            <p className="text-sm text-muted-foreground">
+              Welcome back, {profile?.first_name} {profile?.last_name}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link href="/squads">My Squads</Link>
+            </Button>
+            {invitationCount > 0 && (
+              <Button asChild variant="outline">
+                <Link href="/invitations">
+                  Invitations
+                  <Badge className="ml-2" variant="destructive">
+                    {invitationCount}
+                  </Badge>
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Your Courses</CardTitle>
+              <CardDescription>Enrolled this term</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{courses.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Total Classes</CardTitle>
+              <CardDescription>Per week</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{courses.reduce((sum, c) => sum + c.classCount, 0)}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Your Degree</CardTitle>
+              <CardDescription>Program</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-semibold">{profile?.degree}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Courses</CardTitle>
+            <CardDescription>Classes you're enrolled in this term</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {courses.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No courses found. Please update your timetable.</p>
+            ) : (
+              <div className="space-y-4">
+                {courses.map((course) => (
+                  <div key={course.course} className="border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg">{course.course}</h3>
+                      <Badge variant="secondary">{course.classCount} classes</Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {course.classes.map((cls: any, idx: number) => (
+                        <Badge key={idx} variant="outline">
+                          {cls.class}
+                          {cls.section ? ` ${cls.section}` : ""}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
+          <CardHeader>
+            <CardTitle className="text-white">Ready to Find Your Squad?</CardTitle>
+            <CardDescription className="text-blue-100">
+              Discover students in your courses and form study groups
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="lg" variant="secondary">
+              <Link href="/discover">Find Classmates</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
     </div>
   )
 }

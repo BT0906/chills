@@ -47,9 +47,9 @@ export type Database = {
         Row: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
-          end_time: string | null
+          end_time: string
           id: number
-          room: string
+          room_id: string
           section: string | null
           start_time: string
           user_id: string
@@ -57,9 +57,9 @@ export type Database = {
         Insert: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
-          end_time?: string | null
+          end_time: string
           id: number
-          room: string
+          room_id: string
           section?: string | null
           start_time: string
           user_id: string
@@ -67,17 +67,17 @@ export type Database = {
         Update: {
           class?: Database["public"]["Enums"]["class_type"]
           course?: string
-          end_time?: string | null
+          end_time?: string
           id?: number
-          room?: string
+          room_id?: string
           section?: string | null
           start_time?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "enrolment_room_fkey"
-            columns: ["room"]
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "room"
             referencedColumns: ["id"]
@@ -245,14 +245,17 @@ export type Database = {
         Row: {
           abbr: string
           id: string
+          name: string | null
         }
         Insert: {
           abbr: string
           id: string
+          name?: string | null
         }
         Update: {
           abbr?: string
           id?: string
+          name?: string | null
         }
         Relationships: []
       }
@@ -294,7 +297,35 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      enrolment_with_profile: {
+        Row: {
+          age: number | null
+          bio: string | null
+          class: Database["public"]["Enums"]["class_type"] | null
+          course: string | null
+          degree: string | null
+          end_time: string | null
+          first_name: string | null
+          gender: string | null
+          id: number | null
+          last_name: string | null
+          profile_url: string | null
+          room_id: string | null
+          section: string | null
+          start_time: string | null
+          user_id: string | null
+          zid: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
