@@ -42,6 +42,7 @@ export default function DiscoverPage() {
         if (result.success && result.data) {
           setMatches(result.data)
           setFilteredMatches(result.data)
+          console.log("[v0] Loaded classmates:", result.data)
         } else {
           toast("Error", {
             description: result.error || "Failed to find classmates",

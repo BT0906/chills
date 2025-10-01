@@ -1,43 +1,20 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Search, Users, X } from "lucide-react"
+import { Search, Users, X, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import UserCard from "@/components/squad/UserCard"
 import SelectedUsersBar from "@/components/squad/SelectedUsersBar"
 import { motion, AnimatePresence } from "framer-motion"
+import { findClassmates, type Person } from "@/app/actions/discovery"
+import { createClient } from "@/lib/supabase/client"
 
-interface Profile {
-  zid: string
-  first_name: string
-  last_name: string
-  profile_url: string
-  degree: string
-  gender: string
-  age: number
-  bio: string
-}
+type Student = Person
 
-interface Enrolment {
-  course: string
-  class_type: "lec" | "tut" | "lab"
-  section: string
-  start_time: string
-  end_time: string
-  room_id: string
-}
-
-interface Student extends Profile {
-  enrolments: Enrolment[]
-  commonCourses: string[]
-  sameTutorial: boolean
-  timeOverlap: boolean
-}
-
-// Mock current user (Alice)
 const currentUser = {
   zid: "z5555555",
   first_name: "Alice",
@@ -47,172 +24,6 @@ const currentUser = {
     { course: "MATH1081", class_type: "tut" as const, section: "T14A", start_time: "14:00", end_time: "16:00" },
   ],
 }
-
-// Mock students data
-const mockStudents: Student[] = [
-  {
-    zid: "z5123456",
-    first_name: "Bob",
-    last_name: "Chen",
-    profile_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
-    degree: "Computer Science",
-    gender: "male",
-    age: 19,
-    bio: "Love coding and gaming! Always down for study sessions.",
-    enrolments: [
-      {
-        course: "COMP1511",
-        class_type: "tut",
-        section: "W16B",
-        start_time: "16:00",
-        end_time: "18:00",
-        room_id: "K17-G06",
-      },
-      {
-        course: "MATH1081",
-        class_type: "tut",
-        section: "T14A",
-        start_time: "14:00",
-        end_time: "16:00",
-        room_id: "RC-M032",
-      },
-    ],
-    commonCourses: ["COMP1511", "MATH1081"],
-    sameTutorial: true,
-    timeOverlap: true,
-  },
-  {
-    zid: "z5234567",
-    first_name: "Jeff",
-    last_name: "Wong",
-    profile_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jeff",
-    degree: "Software Engineering",
-    gender: "male",
-    age: 20,
-    bio: "Aspiring software engineer. Let's ace these courses together!",
-    enrolments: [
-      {
-        course: "COMP1511",
-        class_type: "tut",
-        section: "W17A",
-        start_time: "17:00",
-        end_time: "19:00",
-        room_id: "K17-G08",
-      },
-      {
-        course: "COMP1521",
-        class_type: "tut",
-        section: "M14A",
-        start_time: "14:00",
-        end_time: "16:00",
-        room_id: "EE-G09",
-      },
-    ],
-    commonCourses: ["COMP1511", "COMP1521"],
-    sameTutorial: false,
-    timeOverlap: false,
-  },
-  {
-    zid: "z5345678",
-    first_name: "Sarah",
-    last_name: "Liu",
-    profile_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    degree: "Computer Science / Mathematics",
-    gender: "female",
-    age: 19,
-    bio: "Math and CS enthusiast. Looking for dedicated study partners!",
-    enrolments: [
-      {
-        course: "MATH1081",
-        class_type: "tut",
-        section: "T14A",
-        start_time: "14:00",
-        end_time: "16:00",
-        room_id: "RC-M032",
-      },
-      {
-        course: "COMP1521",
-        class_type: "tut",
-        section: "M14A",
-        start_time: "14:00",
-        end_time: "16:00",
-        room_id: "EE-G09",
-      },
-    ],
-    commonCourses: ["MATH1081", "COMP1521"],
-    sameTutorial: true,
-    timeOverlap: true,
-  },
-  {
-    zid: "z5456789",
-    first_name: "Michael",
-    last_name: "Nguyen",
-    profile_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-    degree: "Computer Science",
-    gender: "male",
-    age: 21,
-    bio: "Third year CS. Happy to help first years!",
-    enrolments: [
-      {
-        course: "COMP1511",
-        class_type: "tut",
-        section: "W16B",
-        start_time: "16:00",
-        end_time: "18:00",
-        room_id: "K17-G06",
-      },
-    ],
-    commonCourses: ["COMP1511"],
-    sameTutorial: true,
-    timeOverlap: true,
-  },
-  {
-    zid: "z5567890",
-    first_name: "Emma",
-    last_name: "Kim",
-    profile_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
-    degree: "Software Engineering",
-    gender: "female",
-    age: 19,
-    bio: "New to programming, would love to find study buddies!",
-    enrolments: [
-      {
-        course: "COMP1511",
-        class_type: "tut",
-        section: "W18A",
-        start_time: "18:00",
-        end_time: "20:00",
-        room_id: "K17-G05",
-      },
-    ],
-    commonCourses: ["COMP1511"],
-    sameTutorial: false,
-    timeOverlap: false,
-  },
-  {
-    zid: "z5678901",
-    first_name: "David",
-    last_name: "Park",
-    profile_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-    degree: "Computer Science",
-    gender: "male",
-    age: 20,
-    bio: "Coffee-powered coder. Let's form a squad!",
-    enrolments: [
-      {
-        course: "COMP1521",
-        class_type: "tut",
-        section: "M14A",
-        start_time: "14:00",
-        end_time: "16:00",
-        room_id: "EE-G09",
-      },
-    ],
-    commonCourses: ["COMP1521"],
-    sameTutorial: false,
-    timeOverlap: false,
-  },
-]
 
 const courseColors: Record<string, { bg: string; text: string; border: string }> = {
   COMP1511: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-400", border: "border-blue-500/30" },
@@ -225,6 +36,11 @@ const courseColors: Record<string, { bg: string; text: string; border: string }>
 }
 
 const SquadFormation = () => {
+  const [students, setStudents] = useState<Student[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [filterCourse, setFilterCourse] = useState<string[]>([])
@@ -232,10 +48,52 @@ const SquadFormation = () => {
   const [showTimeOverlap, setShowTimeOverlap] = useState(false)
   const [sortBy, setSortBy] = useState<"commonCourses" | "name">("commonCourses")
 
+  useEffect(() => {
+    async function loadClassmates() {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // Get current user from Supabase auth
+        const supabase = createClient()
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+          setError("Please log in to find classmates")
+          setIsLoading(false)
+          return
+        }
+
+        setCurrentUserId(user.id)
+
+        // Fetch classmates using server action
+        const result = await findClassmates(user.id)
+
+        if (!result.success) {
+          setError(result.error)
+          setIsLoading(false)
+          return
+        }
+
+        setStudents(result.data)
+        setIsLoading(false)
+      } catch (err) {
+        console.error("[v0] Error loading classmates:", err)
+        setError("Failed to load classmates. Please try again.")
+        setIsLoading(false)
+      }
+    }
+
+    loadClassmates()
+  }, [])
+
   const commonCoursesIntersection = useMemo(() => {
     if (selectedUsers.length === 0) return []
 
-    const selectedStudents = mockStudents.filter((s) => selectedUsers.includes(s.zid))
+    const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
     let intersection = new Set(selectedStudents[0].commonCourses)
 
     for (let i = 1; i < selectedStudents.length; i++) {
@@ -244,15 +102,7 @@ const SquadFormation = () => {
     }
 
     return Array.from(intersection)
-  }, [selectedUsers])
-
-  useEffect(() => {
-    if (selectedUsers.length === 0) {
-      setFilterCourse([])
-    } else {
-      setFilterCourse(commonCoursesIntersection)
-    }
-  }, [selectedUsers, commonCoursesIntersection])
+  }, [selectedUsers, students])
 
   const squadCourse = useMemo(() => {
     if (filterCourse.length === 1) return filterCourse[0]
@@ -274,7 +124,7 @@ const SquadFormation = () => {
 
   const toggleCourseFilter = (course: string) => {
     if (selectedUsers.length > 0 && !commonCoursesIntersection.includes(course)) {
-      return // Don't allow toggling disabled filters
+      return
     }
     setFilterCourse((prev) => (prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]))
   }
@@ -293,12 +143,12 @@ const SquadFormation = () => {
 
   const activeFilterCount = filterCourse.length + (showSameTutorial ? 1 : 0) + (showTimeOverlap ? 1 : 0)
 
-  const filteredStudents = mockStudents.filter((student) => {
+  const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.zid.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.degree.toLowerCase().includes(searchQuery.toLowerCase())
+      (student.degree?.toLowerCase() || "").includes(searchQuery.toLowerCase())
 
     if (!matchesSearch) return false
 
@@ -321,8 +171,30 @@ const SquadFormation = () => {
   }
 
   const handleFormSquad = () => {
-    const selectedStudents = mockStudents.filter((s) => selectedUsers.includes(s.zid))
+    const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
     console.log("Forming squad with:", selectedStudents)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+        <div className="text-center">
+          <Users className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4 animate-pulse" />
+          <p className="text-lg font-semibold text-foreground">Finding your classmates...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (
@@ -566,7 +438,7 @@ const SquadFormation = () => {
         {selectedUsers.length > 0 && (
           <SelectedUsersBar
             selectedUsers={selectedUsers}
-            students={mockStudents}
+            students={students}
             onRemove={(zid) => setSelectedUsers((prev) => prev.filter((id) => id !== zid))}
             onFormSquad={handleFormSquad}
             squadCourse={squadCourse}

@@ -9,11 +9,11 @@ import { motion } from "framer-motion"
 
 interface Enrolment {
   course: string
-  class_type: "lec" | "tut" | "lab"
-  section: string
+  class_type: "lec" | "tut" | "lab" | string
+  section: string | null
   start_time: string
   end_time: string
-  room_id: string
+  room_id: string | null
 }
 
 interface Student {
@@ -21,9 +21,9 @@ interface Student {
   first_name: string
   last_name: string
   profile_url: string
-  degree: string
-  age: number
-  bio: string
+  degree: string | null
+  age: number | null
+  bio: string | null
   enrolments: Enrolment[]
   commonCourses: string[]
   sameTutorial: boolean
@@ -114,8 +114,10 @@ const UserCard = ({ student, isSelected, onToggleSelect, courseColors, commonCou
           <div className="flex items-start gap-2">
             <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground leading-tight">{student.degree}</p>
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{student.bio}</p>
+              <p className="text-sm font-medium text-foreground leading-tight">
+                {student.degree || "No degree specified"}
+              </p>
+              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{student.bio || "No bio available"}</p>
             </div>
           </div>
 
@@ -172,7 +174,7 @@ const UserCard = ({ student, isSelected, onToggleSelect, courseColors, commonCou
                         {enrolment.course}{" "}
                         <span className="text-muted-foreground">{enrolment.class_type.toUpperCase()}</span>
                       </span>
-                      <span className="text-muted-foreground font-mono">{enrolment.section}</span>
+                      <span className="text-muted-foreground font-mono">{enrolment.section || "N/A"}</span>
                     </motion.div>
                   )
                 })}
