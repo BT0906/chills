@@ -350,6 +350,20 @@ export type Database = {
           course: string
         }[]
       }
+      get_pending_squads_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          course: string
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: number
+          is_deleted: boolean
+          name: string
+          profile_url: string | null
+          visibility: Database["public"]["Enums"]["squad_visibility"]
+        }[]
+      }
     }
     Enums: {
       class_type: "lec" | "tut" | "lab"
