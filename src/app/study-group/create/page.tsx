@@ -10,12 +10,6 @@ export default function CreateSquadPage() {
     { id: 4, name: "David Kim", avatar: "/student-avatar-4.png" },
   ]
 
-  const proposedTimes = [
-    { day: "Tuesday", time: "3:00 - 4:00 PM", available: 4 },
-    { day: "Wednesday", time: "11:00 AM - 12:00 PM", available: 4 },
-    { day: "Thursday", time: "2:00 - 3:00 PM", available: 3 },
-  ]
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -77,32 +71,6 @@ export default function CreateSquadPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Proposed Meeting Times */}
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Proposed Meeting Times</h2>
-            <div className="space-y-3">
-              {proposedTimes.map((time, index) => (
-                <label
-                  key={index}
-                  className="flex items-center gap-4 bg-card rounded-xl p-5 border border-border hover:border-primary/50 transition-all cursor-pointer"
-                >
-                  <input type="radio" name="meeting-time" className="w-4 h-4" defaultChecked={index === 0} />
-                  <div className="flex-1">
-                    <div className="font-medium text-foreground mb-1">
-                      {time.day}, {time.time}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {time.available} of {selectedStudents.length + 1} available
-                      </span>
-                    </div>
-                  </div>
-                </label>
-              ))}
             </div>
           </div>
 

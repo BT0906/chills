@@ -155,7 +155,7 @@ export type Database = {
           {
             foreignKeyName: "member_squad_id_fkey"
             columns: ["squad_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "squad"
             referencedColumns: ["id"]
           },
@@ -334,6 +334,16 @@ export type Database = {
       }
     }
     Functions: {
+      create_squad: {
+        Args: {
+          p_course: string
+          p_creator_id: string
+          p_description: string
+          p_name: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
       get_common_courses: {
         Args: { user_ids: string[] }
         Returns: {
