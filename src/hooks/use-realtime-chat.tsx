@@ -35,7 +35,7 @@ export function useRealtimeChat({
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const newChannel = supabase.channel(squadId.toString());
+    const newChannel = supabase.channel(`chat-squad-${squadId}`);
 
     newChannel
       .on("broadcast", { event: EVENT_MESSAGE_TYPE }, (payload) => {
