@@ -6,7 +6,7 @@ export const storeMessages = async (messages: ChatMessage[]) => {
   const supabase = createClient();
   const processedMessages: TablesInsert<"message">[] = messages.map((msg) => ({
     body: msg.content,
-    sender: msg.user.id,
+    sender_id: msg.user.id,
     squad_id: msg.squadId,
   }));
   const { error } = await supabase.from("message").upsert(processedMessages);
