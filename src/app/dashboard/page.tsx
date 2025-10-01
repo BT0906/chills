@@ -10,12 +10,16 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getUserCourses } from "@/app/actions/discovery"
 import { getPendingInvitations } from "@/app/actions/squad"
 import Link from "next/link"
+import { useUser } from "@/hooks/use-user"
+import { useProfile } from "@/hooks/use-profile"
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
-  // const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
+  const { user } = useUser();
+  const { profile } = useProfile(user?.id)
+
   const [courses, setCourses] = useState<any[]>([])
+
   const [invitationCount, setInvitationCount] = useState(0)
   const router = useRouter()
   const supabase = createClient()
@@ -23,35 +27,19 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser()
-
-        if (!authUser) {
+        if (!user) {
           router.push("/login")
           return
         }
 
-        // setUser(authUser)
-
-        // Get profile
-        const { data: profileData } = await supabase.from("profile").select("*").eq("id", authUser.id).single()
-
-        if (!profileData) {
-          router.push("/onboarding")
-          return
-        }
-
-        setProfile(profileData)
-
         // Get courses
-        const result = await getUserCourses(authUser.id)
+        const result = await getUserCourses(user.id)
         if (result.success && result.data) {
           setCourses(result.data)
         }
 
         // Get invitation count
-        const invitationsResult = await getPendingInvitations(authUser.id)
+        const invitationsResult = await getPendingInvitations(user.id)
         if (invitationsResult.success && invitationsResult.data) {
           setInvitationCount(invitationsResult.data.length)
         }
@@ -63,7 +51,7 @@ export default function DashboardPage() {
     }
 
     loadData()
-  }, [router, supabase])
+  }, [router, supabase, user])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -152,7 +140,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Your Courses</CardTitle>
-            <CardDescription>Classes you're enrolled in this term</CardDescription>
+            <CardDescription>Classes you are enrolled in this term</CardDescription>
           </CardHeader>
           <CardContent>
             {courses.length === 0 ? (

@@ -143,7 +143,7 @@ export async function findClassmates(userId: string) {
   }
 }
 
-export async function getUserCourses(userId: string) {
+export async function getUserCourses(userId: string | undefined) {
   try {
     const supabase = await createClient()
 
