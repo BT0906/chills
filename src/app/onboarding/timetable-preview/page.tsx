@@ -39,8 +39,8 @@ export default function TimetablePreviewPage() {
         const { data: profileData, error: profileError } = await supabase
           .from("profile")
           .select("ics_link")
-          .eq("id", data.user.id) // Match the profile with the authenticated user
-          .single();
+          .eq("user_id", data.user.id) // Match the profile with the authenticated user
+          .maybeSingle();
 
         if (profileError || !profileData) {
           throw new Error("Failed to fetch profile data");
