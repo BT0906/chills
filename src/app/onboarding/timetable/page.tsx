@@ -57,13 +57,14 @@ export default function TimetableSetupPage() {
       // Combine profile data from local storage with the iCal link
       const profileUpdateData = {
         ...profileData, // All the profile data from local storage
+        user_id: user.id,
         ics_link: icalLink,
       };
 
       // Update the user's profile in the database
       const { error: updateError } = await supabase
         .from("profile")
-        .upsert({ user_id: user.id, ...profileUpdateData });
+        .upsert(profileUpdateData);
 
       if (updateError) {
         throw updateError;
