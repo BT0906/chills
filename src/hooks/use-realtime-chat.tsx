@@ -1,10 +1,11 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { getSquadChannelName } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
 
 interface UseRealtimeChatProps {
-  userId: string;
+  profileId: string;
   username: string;
   squadId: number;
 }
@@ -23,7 +24,7 @@ export interface ChatMessage {
 const EVENT_MESSAGE_TYPE = "message";
 
 export function useRealtimeChat({
-  userId,
+  profileId,
   username,
   squadId,
 }: UseRealtimeChatProps) {
@@ -35,7 +36,7 @@ export function useRealtimeChat({
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const newChannel = supabase.channel(`chat-squad-${squadId}`);
+    const newChannel = supabase.channel(getSquadChannelName(squadId));
 
     newChannel
       .on("broadcast", { event: EVENT_MESSAGE_TYPE }, (payload) => {
@@ -62,7 +63,7 @@ export function useRealtimeChat({
         id: crypto.randomUUID(),
         content,
         user: {
-          id: userId,
+          id: profileId,
           name: username,
         },
         squadId: squadId,
@@ -78,7 +79,7 @@ export function useRealtimeChat({
         payload: message,
       });
     },
-    [channel, isConnected, username, userId, squadId]
+    [channel, isConnected, username, profileId, squadId]
   );
 
   return { messages, sendMessage, isConnected };

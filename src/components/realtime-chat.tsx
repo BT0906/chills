@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface RealtimeChatProps {
   squadId: number;
-  userId: string;
+  profileId: string;
   username: string;
   onMessage?: (messages: ChatMessage[]) => void;
   messages?: ChatMessage[];
@@ -20,7 +20,7 @@ interface RealtimeChatProps {
 /**
  * Realtime chat component
  * @param squadId - The ID of the squad to join. Each squad is a unique chat.
- * @param userId - The ID of the user
+ * @param profileId - The ID of the user's profile
  * @param username - The username of the user
  * @param onMessage - The callback function to handle the messages. Useful if you want to store the messages in a database.
  * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
@@ -28,7 +28,7 @@ interface RealtimeChatProps {
  */
 export const RealtimeChat = ({
   squadId,
-  userId,
+  profileId,
   username,
   onMessage,
   messages: initialMessages = [],
@@ -41,7 +41,7 @@ export const RealtimeChat = ({
     isConnected,
   } = useRealtimeChat({
     squadId,
-    userId,
+    profileId,
     username,
   });
   const [newMessage, setNewMessage] = useState("");
