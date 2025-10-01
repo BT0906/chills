@@ -1,10 +1,10 @@
 "use client";
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Calendar, Users, MessageSquare } from "lucide-react"
-import { Typewriter } from "../../components/ui/typewriter";
-import { ContainerScroll } from "../../components/ui/container-scroll-animation";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { ContainerScroll } from "../../components/ui/container-scroll-animation";
+import { Typewriter } from "../../components/ui/typewriter";
 
 export default function LandingPage() {
   return (
@@ -31,48 +31,50 @@ export default function LandingPage() {
 
       <section className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-4xl text-center">
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 text-balance">
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 text-balance">
             Study in a group of{" "}
             <Typewriter
-                words={["two", "five", "six", "three", "four", "seven"]}
-                className="text-blue-500"
-            />,
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-10 text-pretty max-w-2xl mx-auto">
-            Connect with classmates, sync your timetable, and form study groups effortlessly
-            </p>
-            <Link href="/sign-up">
+              words={["two", "five", "six", "three", "four", "seven"]}
+              className="text-blue-500"
+            />
+            ,
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 text-pretty max-w-2xl mx-auto">
+            Connect with classmates, sync your timetable, and form study groups
+            effortlessly
+          </p>
+          <Link href="/auth/sign-up">
             <Button size="lg" className="text-lg px-8 py-6 rounded-full">
-                Start chilling
-                <ArrowRight className="ml-2 h-5 w-5" />
+              Start chilling
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            </Link>
+          </Link>
         </div>
-        </section>
+      </section>
 
-        <div className="flex flex-col overflow-hidden">
+      <div className="flex flex-col overflow-hidden">
         <ContainerScroll
-            titleComponent={
+          titleComponent={
             <>
-                <h1 className="text-4xl font-semibold text-black dark:text-white">
+              <h1 className="text-4xl font-semibold text-black dark:text-white">
                 Unleash the power of <br />
                 <span className="text-4xl md:text-[6rem] font-bold mt-1 leading-none">
-                    Studying together
+                  Studying together
                 </span>
-                </h1>
+              </h1>
             </>
-            }
+          }
         >
-            <img
+          <Image
             src="/assets/image.png"
             alt="hero"
             height={700}
             width={1400}
             className="mx-auto rounded-2xl object-cover h-full object-left-top"
             draggable={false}
-            />
+          />
         </ContainerScroll>
-        </div>
+      </div>
 
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-3xl mx-auto text-center bg-primary rounded-3xl p-12 md:p-16">
@@ -82,8 +84,12 @@ export default function LandingPage() {
           <p className="text-lg text-primary-foreground/90 mb-8">
             Join students who are already studying smarter together
           </p>
-          <Link href="/sign-up">
-            <Button size="lg" variant="secondary" className="text-lg px-8 py-6 rounded-full">
+          <Link href="/auth/sign-up">
+            <Button
+              size="lg"
+              variant="secondary"
+              className="text-lg px-8 py-6 rounded-full"
+            >
               Get Started Free
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -95,16 +101,27 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">© 2025 chills.</span>
+              <span className="text-sm text-muted-foreground">
+                © 2025 chills.
+              </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-foreground transition-colors"
+              >
                 Privacy
               </Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">
+              <Link
+                href="/terms"
+                className="hover:text-foreground transition-colors"
+              >
                 Terms
               </Link>
-              <Link href="/contact" className="hover:text-foreground transition-colors">
+              <Link
+                href="/contact"
+                className="hover:text-foreground transition-colors"
+              >
                 Contact
               </Link>
             </div>
@@ -112,5 +129,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
