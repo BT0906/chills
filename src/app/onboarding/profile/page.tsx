@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { TablesInsert } from "@/types/database.types";
+import { User } from "lucide-react"; // You can choose the icon you prefer
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { User } from "lucide-react" // You can choose the icon you prefer
-import { useRouter } from "next/navigation"
 
 export default function OnboardingStepOne() {
   const [firstName, setFirstName] = useState<string>("");
@@ -35,7 +35,7 @@ export default function OnboardingStepOne() {
 
     try {
       // Save the data to localStorage
-      const profileData = {
+      const profileData: TablesInsert<"profile"> = {
         first_name: firstName,
         last_name: lastName,
         zid,
@@ -43,12 +43,12 @@ export default function OnboardingStepOne() {
         gender,
         age: age ? Number(age) : null,
         bio,
+        ics_link: "", // Will be updated in the next step
       };
       localStorage.setItem("profileStep1", JSON.stringify(profileData));
 
       // Redirect to step 2 (where we will collect the iCal link)
       router.push("/onboarding/timetable"); // Adjust the path as needed
-
     } catch (error) {
       console.error("Error during submit:", error);
       setError("An error occurred. Please try again.");
@@ -64,9 +64,13 @@ export default function OnboardingStepOne() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
+              <span className="text-primary-foreground font-bold text-lg">
+                C
+              </span>
             </div>
-            <span className="text-xl font-semibold text-foreground">Chills</span>
+            <span className="text-xl font-semibold text-foreground">
+              Chills
+            </span>
           </div>
         </div>
       </header>
@@ -75,11 +79,18 @@ export default function OnboardingStepOne() {
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Step 1 of 3</span>
-            <span className="text-sm text-muted-foreground">Complete your profile</span>
+            <span className="text-sm font-medium text-foreground">
+              Step 1 of 3
+            </span>
+            <span className="text-sm text-muted-foreground">
+              Complete your profile
+            </span>
           </div>
           <div className="w-full bg-muted rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: "33%" }} />
+            <div
+              className="bg-primary h-2 rounded-full transition-all"
+              style={{ width: "33%" }}
+            />
           </div>
         </div>
       </div>
@@ -91,7 +102,9 @@ export default function OnboardingStepOne() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Complete Your Profile</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Complete Your Profile
+            </h1>
             <p className="text-muted-foreground text-lg">
               Please fill in your basic details to get started.
             </p>
@@ -194,7 +207,11 @@ export default function OnboardingStepOne() {
                 {/* <Button type="button" variant="outline" className="flex-1 h-12 bg-transparent" asChild>
                   <Link href="/onboarding/welcome">Back</Link>
                 </Button> */}
-                <Button type="submit" className="flex-1 h-12" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="flex-1 h-12"
+                  disabled={loading}
+                >
                   {loading ? "Saving..." : "Continue"}
                 </Button>
               </div>
