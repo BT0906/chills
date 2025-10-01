@@ -1,20 +1,28 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Calendar, Upload } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function TimetableSetupPage() {
+  const router = useRouter()
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    // You can grab the ical-link value here if you want:
+    // const icalLink = (e.currentTarget.elements.namedItem("ical-link") as HTMLInputElement).value
+    router.push("/auth/onboarding/timetable-preview")
+  }
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
-            </div>
-            <span className="text-xl font-semibold text-foreground">Chills</span>
+            <span className="text-xl font-semibold text-foreground">chills.</span>
           </div>
         </div>
       </header>
@@ -46,7 +54,7 @@ export default function TimetableSetupPage() {
           </div>
 
           <div className="bg-card rounded-2xl p-8 shadow-sm border border-border">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="ical-link">iCal Link</Label>
                 <Input
