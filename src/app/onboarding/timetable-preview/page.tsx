@@ -38,11 +38,11 @@ export default function TimetablePreviewPage() {
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Step 2 of 3</span>
+            <span className="text-sm font-medium text-foreground">Step 3 of 3</span>
             <span className="text-sm text-muted-foreground">Review Timetable</span>
           </div>
           <div className="w-full bg-muted rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: "66%" }} />
+            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: "100%" }} />
           </div>
         </div>
       </div>

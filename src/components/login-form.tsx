@@ -31,13 +31,32 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Sign in the user
+      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-      if (error) throw error
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push('/protected')
+
+      if (signInError) throw signInError
+
+      // Step 1: Check if the user has a profile
+      const { data: profiles, error: profileError } = await supabase
+        .from('profile')
+        .select('*')
+        .eq('id', user?.id);  // Do not use `.single()` here
+
+      if (profileError) {
+        console.error('Profile query error:', profileError);
+        throw profileError;
+      }
+
+      // Step 2: If no profiles are found, redirect to onboarding
+      if (profiles.length === 0) {
+        router.push('/onboarding/profile')  // Adjust this path to your onboarding route
+      } else {
+        router.push('/dashboard')  // Redirect to main dashboard or the app
+      }
+
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
@@ -98,17 +117,17 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           </form>
         </CardContent>
         <BorderBeam
-        duration={6}
-        size={400}
-        className="from-transparent via-red-500 to-transparent"
-      />
-      <BorderBeam
-        duration={6}
-        delay={3}
-        size={400}
-        borderWidth={2}
-        className="from-transparent via-blue-500 to-transparent"
-      />
+          duration={6}
+          size={400}
+          className="from-transparent via-red-500 to-transparent"
+        />
+        <BorderBeam
+          duration={6}
+          delay={3}
+          size={400}
+          borderWidth={2}
+          className="from-transparent via-blue-500 to-transparent"
+        />
       </Card>
     </div>
   )
