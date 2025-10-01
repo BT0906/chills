@@ -1,14 +1,31 @@
-"use client"
-import { RealtimeChat } from '@/components/realtime-chat'
-import { Input } from '@/components/ui/input'
-import { useState } from 'react'
+"use client";
+import { RealtimeChat } from "@/components/realtime-chat";
+import { useProfile } from "@/hooks/use-profile";
+import { ChatMessage } from "@/hooks/use-realtime-chat";
+import { useUser } from "@/hooks/use-user";
+import { storeMessages } from "@/lib/store-messages";
+import { formatUserName } from "@/lib/utils";
 
 export default function ChatPage() {
-    const [username, setUsername] = useState('')
-    return (
-        <>
-            <Input placeholder="Type your username..." value={username} onChange={(e) => setUsername(e.target.value)} />
-            <RealtimeChat roomName="my-chat-room" username={username} />
-        </>
-    )
+  const { user } = useUser();
+  const { profile } = useProfile(user?.id);
+
+  if (!user || !profile) {
+    return <div>Please log in to access the chat.</div>;
+  }
+
+  const handleMessage = async (messages: ChatMessage[]) => {
+    await storeMessages(messages);
+  };
+
+  return (
+    <>
+      <RealtimeChat
+        squadId={1} // TODO: Replace with actual squad ID
+        userId={user.id}
+        username={formatUserName(profile.first_name, profile.last_name)}
+        onMessage={handleMessage}
+      />
+    </>
+  );
 }
