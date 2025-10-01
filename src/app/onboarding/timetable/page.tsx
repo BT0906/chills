@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { Tables } from "@/types/database.types";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,9 @@ export default function TimetableSetupPage() {
   const [icalLink, setIcalLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [profileData, setProfileData] = useState<Tables<"profile"> | null>(
+    null
+  );
 
   const supabase = createClient();
   const router = useRouter();
@@ -65,15 +68,16 @@ export default function TimetableSetupPage() {
       }
 
       // Combine profile data from local storage with the iCal link
-      const profileUpdateData: ProfileData = {
+      const profileUpdateData = {
         ...profileData, // All the profile data from local storage
-        ics_link: icalLink, // Add the ical link
+        user_id: user.id,
+        ics_link: icalLink,
       };
 
       // Update the user's profile in the database
-      const { data: profileDataResponse, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from("profile")
-        .upsert({ id: user.id, ...profileUpdateData });
+        .upsert(profileUpdateData);
 
       if (updateError) {
         throw updateError;

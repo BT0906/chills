@@ -47,9 +47,9 @@ export type Database = {
         Row: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
-          end_time: string | null
+          end_time: string
           id: number
-          room: string
+          room_id: string
           section: string | null
           start_time: string
           user_id: string
@@ -57,9 +57,9 @@ export type Database = {
         Insert: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
-          end_time?: string | null
-          id: number
-          room: string
+          end_time: string
+          id?: number
+          room_id: string
           section?: string | null
           start_time: string
           user_id: string
@@ -67,17 +67,17 @@ export type Database = {
         Update: {
           class?: Database["public"]["Enums"]["class_type"]
           course?: string
-          end_time?: string | null
+          end_time?: string
           id?: number
-          room?: string
+          room_id?: string
           section?: string | null
           start_time?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "enrolment_room_fkey"
-            columns: ["room"]
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "room"
             referencedColumns: ["id"]
@@ -136,16 +136,19 @@ export type Database = {
         Row: {
           created_at: string
           squad_id: number
+          status: Database["public"]["Enums"]["member_type"]
           user_id: string
         }
         Insert: {
           created_at?: string
           squad_id: number
+          status?: Database["public"]["Enums"]["member_type"]
           user_id: string
         }
         Update: {
           created_at?: string
           squad_id?: number
+          status?: Database["public"]["Enums"]["member_type"]
           user_id?: string
         }
         Relationships: [
@@ -211,6 +214,7 @@ export type Database = {
           id: string
           last_name: string
           profile_url: string | null
+          user_id: string | null
           zid: string
         }
         Insert: {
@@ -221,9 +225,10 @@ export type Database = {
           first_name: string
           gender?: string | null
           ics_link: string
-          id: string
+          id?: string
           last_name: string
           profile_url?: string | null
+          user_id?: string | null
           zid: string
         }
         Update: {
@@ -237,6 +242,7 @@ export type Database = {
           id?: string
           last_name?: string
           profile_url?: string | null
+          user_id?: string | null
           zid?: string
         }
         Relationships: []
@@ -245,14 +251,17 @@ export type Database = {
         Row: {
           abbr: string
           id: string
+          name: string | null
         }
         Insert: {
           abbr: string
           id: string
+          name?: string | null
         }
         Update: {
           abbr?: string
           id?: string
+          name?: string | null
         }
         Relationships: []
       }
@@ -263,9 +272,9 @@ export type Database = {
           creator_id: string
           description: string | null
           id: number
+          is_deleted: boolean
           name: string
           profile_url: string | null
-          status: Database["public"]["Enums"]["squad_type"]
           visibility: Database["public"]["Enums"]["squad_visibility"]
         }
         Insert: {
@@ -274,9 +283,9 @@ export type Database = {
           creator_id: string
           description?: string | null
           id?: number
+          is_deleted?: boolean
           name: string
           profile_url?: string | null
-          status?: Database["public"]["Enums"]["squad_type"]
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Update: {
@@ -285,23 +294,56 @@ export type Database = {
           creator_id?: string
           description?: string | null
           id?: number
+          is_deleted?: boolean
           name?: string
           profile_url?: string | null
-          status?: Database["public"]["Enums"]["squad_type"]
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      enrolment_with_profile: {
+        Row: {
+          age: number | null
+          bio: string | null
+          class: Database["public"]["Enums"]["class_type"] | null
+          course: string | null
+          degree: string | null
+          end_time: string | null
+          first_name: string | null
+          gender: string | null
+          id: number | null
+          last_name: string | null
+          profile_url: string | null
+          room_id: string | null
+          section: string | null
+          start_time: string | null
+          user_id: string | null
+          zid: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_common_courses: {
+        Args: { user_ids: string[] }
+        Returns: {
+          course: string
+        }[]
+      }
     }
     Enums: {
       class_type: "lec" | "tut" | "lab"
-      squad_type: "pending" | "active" | "deleted"
+      member_type: "pending" | "active" | "left"
       squad_visibility: "open" | "closed"
     }
     CompositeTypes: {
@@ -431,7 +473,7 @@ export const Constants = {
   public: {
     Enums: {
       class_type: ["lec", "tut", "lab"],
-      squad_type: ["pending", "active", "deleted"],
+      member_type: ["pending", "active", "left"],
       squad_visibility: ["open", "closed"],
     },
   },
