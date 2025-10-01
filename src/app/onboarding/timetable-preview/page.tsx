@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 export default function TimetablePreviewPage() {
   const [icalLink, setIcalLink] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<ScheduleEvent[]>([]); // State to hold the schedule events
   const router = useRouter();
