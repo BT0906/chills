@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Calendar } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Define the profile data type (including ics_link)
 interface ProfileData {
@@ -49,7 +49,7 @@ export default function TimetableSetupPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+    localStorage.setItem("icallink", icalLink);
     try {
       // Get the user object from Supabase
       const { data, error: userError } = await supabase.auth.getUser();
@@ -66,8 +66,8 @@ export default function TimetableSetupPage() {
 
       // Combine profile data from local storage with the iCal link
       const profileUpdateData: ProfileData = {
-        ...profileData,  // All the profile data from local storage
-        ics_link: icalLink,  // Add the ical link
+        ...profileData, // All the profile data from local storage
+        ics_link: icalLink, // Add the ical link
       };
 
       // Update the user's profile in the database
@@ -84,7 +84,6 @@ export default function TimetableSetupPage() {
 
       // Redirect to the next step or success page
       router.push("/onboarding/timetable-preview"); // Adjust the path as needed
-
     } catch (error: unknown) {
       console.error("Error during submit:", error);
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -100,9 +99,13 @@ export default function TimetableSetupPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
+              <span className="text-primary-foreground font-bold text-lg">
+                C
+              </span>
             </div>
-            <span className="text-xl font-semibold text-foreground">Chills</span>
+            <span className="text-xl font-semibold text-foreground">
+              Chills
+            </span>
           </div>
         </div>
       </header>
@@ -111,11 +114,18 @@ export default function TimetableSetupPage() {
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Step 2 of 3</span>
-            <span className="text-sm text-muted-foreground">Setup Timetable</span>
+            <span className="text-sm font-medium text-foreground">
+              Step 2 of 3
+            </span>
+            <span className="text-sm text-muted-foreground">
+              Setup Timetable
+            </span>
           </div>
           <div className="w-full bg-muted rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: "66%" }} />
+            <div
+              className="bg-primary h-2 rounded-full transition-all"
+              style={{ width: "66%" }}
+            />
           </div>
         </div>
       </div>
@@ -127,9 +137,12 @@ export default function TimetableSetupPage() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Calendar className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Upload your timetable</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Upload your timetable
+            </h1>
             <p className="text-muted-foreground text-lg">
-              Paste your iCal link to automatically sync your courses and schedule
+              Paste your iCal link to automatically sync your courses and
+              schedule
             </p>
           </div>
 
@@ -154,10 +167,19 @@ export default function TimetableSetupPage() {
               {error && <p className="text-red-500 text-center">{error}</p>}
 
               <div className="flex gap-3">
-                <Button type="button" variant="outline" className="flex-1 h-12 bg-transparent" asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-12 bg-transparent"
+                  asChild
+                >
                   <Link href="/onboarding/profile">Back</Link>
                 </Button>
-                <Button type="submit" className="flex-1 h-12" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="flex-1 h-12"
+                  disabled={loading}
+                >
                   {loading ? "Saving..." : "Continue"}
                 </Button>
               </div>

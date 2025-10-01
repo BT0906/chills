@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     // Initialize the Supabase client
     const supabase = await createClient();
     const url = req.nextUrl.searchParams.get("icalUrl");
-    console.log(url);
+    console.log("the url is:", url);
     if (!url) {
       return NextResponse.json({ error: "Invalid iCal URL" }, { status: 400 });
     }
@@ -124,10 +124,12 @@ export async function GET(req: NextRequest) {
     const comp = new ICAL.Component(jcalData);
     const events = comp.getAllSubcomponents("vevent");
     // Filter and map events to a readable schedule
+    console.log(icalText);
     const schedule: ScheduleEvent[] = events
       .map((event) => {
         const e = new ICAL.Event(event);
-
+        console.log(e.summary);
+        console.log("the e is here", e);
         const courseCodeRegex = /^[A-Za-z]{4}\d{4}$/; // Regex for course codes like COMP4920, FINS2615, etc.
 
         const [course, type] = e.summary.split(" ");
@@ -143,6 +145,9 @@ export async function GET(req: NextRequest) {
           ? "lab"
           : "Other"; // Class is derived from the event summary text
 
+        if (e.summary.includes("Final")) {
+          return null; // Skip events with 'Final' in the summary
+        }
         return {
           course: course, // Store course code (e.g., COMP4920)
           startDate: e.startDate.toString(),
@@ -151,8 +156,7 @@ export async function GET(req: NextRequest) {
           class: className, // Class is 'Lecture', 'Tutorial', etc.
         };
       })
-      .filter((event) => event !== null); // Filter out null values (non-course events)
-
+      .filter((event) => event !== null); // filter null values
     // If no events to store, return an error
     if (schedule.length === 0) {
       return NextResponse.json(
