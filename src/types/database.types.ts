@@ -194,6 +194,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "message_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "message_squad_id_fkey"
             columns: ["squad_id"]
             isOneToOne: false
@@ -332,25 +339,6 @@ export type Database = {
           },
         ]
       }
-      student_with_enrolments: {
-        Row: {
-          age: number | null
-          bio: string | null
-          courses: string[] | null
-          created_at: string | null
-          degree: string | null
-          enrolments: Json | null
-          first_name: string | null
-          gender: string | null
-          ics_link: string | null
-          id: string | null
-          last_name: string | null
-          profile_url: string | null
-          user_id: string | null
-          zid: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       create_squad: {
@@ -367,6 +355,20 @@ export type Database = {
         Args: { user_ids: string[] }
         Returns: {
           course: string
+        }[]
+      }
+      get_pending_squads_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          course: string
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: number
+          is_deleted: boolean
+          name: string
+          profile_url: string | null
+          visibility: Database["public"]["Enums"]["squad_visibility"]
         }[]
       }
     }
