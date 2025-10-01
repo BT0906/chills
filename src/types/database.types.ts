@@ -7,30 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -72,7 +52,7 @@ export type Database = {
           room: string
           section: string | null
           start_time: string
-          user: string
+          user_id: string
         }
         Insert: {
           class: Database["public"]["Enums"]["class_type"]
@@ -82,7 +62,7 @@ export type Database = {
           room: string
           section?: string | null
           start_time: string
-          user: string
+          user_id: string
         }
         Update: {
           class?: Database["public"]["Enums"]["class_type"]
@@ -92,7 +72,7 @@ export type Database = {
           room?: string
           section?: string | null
           start_time?: string
-          user?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -100,48 +80,48 @@ export type Database = {
             columns: ["room"]
             isOneToOne: false
             referencedRelation: "room"
-            referencedColumns: ["name"]
+            referencedColumns: ["id"]
           },
         ]
       }
       meeting: {
         Row: {
           created_at: string
-          creator: string
+          creator_id: string
           description: string | null
           end_time: string | null
           id: number
-          room: string | null
+          room_id: string | null
           squad_id: number
           start_time: string
         }
         Insert: {
           created_at?: string
-          creator: string
+          creator_id: string
           description?: string | null
           end_time?: string | null
           id?: number
-          room?: string | null
+          room_id?: string | null
           squad_id: number
           start_time: string
         }
         Update: {
           created_at?: string
-          creator?: string
+          creator_id?: string
           description?: string | null
           end_time?: string | null
           id?: number
-          room?: string | null
+          room_id?: string | null
           squad_id?: number
           start_time?: string
         }
         Relationships: [
           {
-            foreignKeyName: "meeting_room_fkey"
-            columns: ["room"]
+            foreignKeyName: "meeting_room_id_fkey"
+            columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "room"
-            referencedColumns: ["name"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "meeting_squad_id_fkey"
@@ -172,7 +152,7 @@ export type Database = {
           {
             foreignKeyName: "member_squad_id_fkey"
             columns: ["squad_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "squad"
             referencedColumns: ["id"]
           },
@@ -180,32 +160,32 @@ export type Database = {
       }
       message: {
         Row: {
-          body: string | null
+          body: string
           created_at: string
           id: number
           is_deleted: boolean
           is_edited: boolean
-          sender: string
+          sender_id: string
           squad_id: number
           updated_at: string | null
         }
         Insert: {
-          body?: string | null
+          body: string
           created_at?: string
           id?: number
           is_deleted?: boolean
           is_edited?: boolean
-          sender: string
+          sender_id: string
           squad_id: number
           updated_at?: string | null
         }
         Update: {
-          body?: string | null
+          body?: string
           created_at?: string
           id?: number
           is_deleted?: boolean
           is_edited?: boolean
-          sender?: string
+          sender_id?: string
           squad_id?: number
           updated_at?: string | null
         }
@@ -230,7 +210,7 @@ export type Database = {
           ics_link: string
           id: string
           last_name: string
-          profile_url: string
+          profile_url: string | null
           zid: string
         }
         Insert: {
@@ -243,7 +223,7 @@ export type Database = {
           ics_link: string
           id: string
           last_name: string
-          profile_url: string
+          profile_url?: string | null
           zid: string
         }
         Update: {
@@ -256,7 +236,7 @@ export type Database = {
           ics_link?: string
           id?: string
           last_name?: string
-          profile_url?: string
+          profile_url?: string | null
           zid?: string
         }
         Relationships: []
@@ -264,15 +244,15 @@ export type Database = {
       room: {
         Row: {
           abbr: string
-          name: string
+          id: string
         }
         Insert: {
           abbr: string
-          name: string
+          id: string
         }
         Update: {
           abbr?: string
-          name?: string
+          id?: string
         }
         Relationships: []
       }
@@ -280,7 +260,7 @@ export type Database = {
         Row: {
           course: string
           created_at: string
-          creator: string
+          creator_id: string
           description: string | null
           id: number
           name: string
@@ -291,7 +271,7 @@ export type Database = {
         Insert: {
           course: string
           created_at?: string
-          creator: string
+          creator_id: string
           description?: string | null
           id?: number
           name: string
@@ -302,7 +282,7 @@ export type Database = {
         Update: {
           course?: string
           created_at?: string
-          creator?: string
+          creator_id?: string
           description?: string | null
           id?: number
           name?: string
@@ -448,9 +428,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       class_type: ["lec", "tut", "lab"],
@@ -459,4 +436,3 @@ export const Constants = {
     },
   },
 } as const
-
