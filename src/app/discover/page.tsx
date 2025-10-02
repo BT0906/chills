@@ -1,7 +1,6 @@
 "use client";
 
 import { findClassmates, getCurrentUser } from "@/app/actions/discovery";
-import FormSquadDialog from "@/components/squad/Dialog";
 import SelectedUsersBar from "@/components/squad/SelectedUsersBar";
 import UserCard from "@/components/squad/UserCard";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +39,14 @@ interface Enrolment {
   room_id: string;
 }
 
+interface ApiEnrolment {
+  course: string;
+  class: string;
+  section: string | null;
+  start_time: string;
+  end_time: string;
+}
+
 interface CourseWithCommonFlag {
   course: string;
   isCommon: boolean;
@@ -56,6 +63,7 @@ interface Student extends Profile {
 }
 
 interface CurrentUser {
+  userId: string;
   zid: string;
   first_name: string;
   courses: string[];
@@ -122,6 +130,7 @@ const SquadFormation = () => {
       );
 
       const user: CurrentUser = {
+        userId: userResult.data.userId,
         zid: profile.zid,
         first_name: profile.first_name,
         courses: userCourses,
@@ -362,7 +371,7 @@ const SquadFormation = () => {
     const selectedStudents = students.filter((s) =>
       selectedUsers.includes(s.zid)
     );
-  
+
     // Map to squad input
     const squadInput: CreateSquadInput = {
       name,
@@ -371,17 +380,25 @@ const SquadFormation = () => {
       creator_id: currentUserId,
       user_ids: selectedStudents.map((s) => s.zid), // 👈 just extract the zid
     };
-  
+
     console.log("[v0] Squad payload:", squadInput);
-  
+
     // Call your SQL RPC
     const result = await createSquad(squadInput);
-  
+
     if (result.success) {
       console.log("✅ Squad created with ID:", result.squad_id);
-      // route.push(`/squad/${result.squad_id}`)
+      // Clear selections
+      setSelectedUsers([]);
+      // Navigate to the new squad (you can add navigation here later)
+      // window.location.href = `/squads/${result.squad_id}`;
+      alert(
+        `Squad "${name}" created successfully! Squad ID: ${result.squad_id}`
+      );
     } else {
       console.error("❌ Error creating squad:", result.error);
+      alert(`Failed to create squad: ${result.error}`);
+      throw new Error(result.error);
     }
   };
 
@@ -677,6 +694,7 @@ const SquadFormation = () => {
             onFormSquad={handleFormSquad}
             squadCourse={squadCourse}
             commonCoursesIntersection={commonCoursesIntersection}
+            currentUserId={currentUser.userId}
           />
         )}
       </AnimatePresence>
