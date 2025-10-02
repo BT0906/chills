@@ -155,8 +155,15 @@ export type Database = {
           {
             foreignKeyName: "member_squad_id_fkey"
             columns: ["squad_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "squad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profile"
             referencedColumns: ["id"]
           },
         ]
@@ -165,7 +172,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string
-          id: number
+          id: string
           is_deleted: boolean
           is_edited: boolean
           sender_id: string
@@ -175,7 +182,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
-          id?: number
+          id?: string
           is_deleted?: boolean
           is_edited?: boolean
           sender_id: string
@@ -185,7 +192,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
-          id?: number
+          id?: string
           is_deleted?: boolean
           is_edited?: boolean
           sender_id?: string
@@ -193,6 +200,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "message_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "message_squad_id_fkey"
             columns: ["squad_id"]
@@ -334,15 +348,49 @@ export type Database = {
       }
     }
     Functions: {
+      create_squad: {
+        Args: {
+          p_course: string
+          p_creator_id: string
+          p_description: string
+          p_name: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
       get_common_courses: {
         Args: { user_ids: string[] }
         Returns: {
           course: string
         }[]
       }
+      get_pending_squads_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          course: string
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: number
+          is_deleted: boolean
+          name: string
+          profile_url: string | null
+          visibility: Database["public"]["Enums"]["squad_visibility"]
+        }[]
+      }
+      get_squad_members: {
+        Args: { p_squad_id: number }
+        Returns: {
+          first_name: string
+          joined_at: string
+          last_name: string
+          status: Database["public"]["Enums"]["member_type"]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
-      class_type: "lec" | "tut" | "lab"
+      class_type: "lec" | "tut" | "lab" | "other"
       member_type: "pending" | "active" | "left"
       squad_visibility: "open" | "closed"
     }
@@ -472,7 +520,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      class_type: ["lec", "tut", "lab"],
+      class_type: ["lec", "tut", "lab", "other"],
       member_type: ["pending", "active", "left"],
       squad_visibility: ["open", "closed"],
     },

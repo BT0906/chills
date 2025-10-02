@@ -66,6 +66,7 @@
 // }
 
 import { createClient } from "@/lib/supabase/server";
+import { Enums } from "@/types/database.types";
 import axios from "axios";
 import ICAL from "ical.js";
 import { NextRequest, NextResponse } from "next/server";
@@ -76,7 +77,7 @@ interface ScheduleEvent {
   startDate: string;
   endDate: string;
   location: string;
-  class: string; // Added class to event
+  class: Enums<"class_type">;
 }
 async function getRoomIdByName(roomName: string) {
   const supabase = await createClient();
@@ -124,12 +125,9 @@ export async function GET(req: NextRequest) {
     const comp = new ICAL.Component(jcalData);
     const events = comp.getAllSubcomponents("vevent");
     // Filter and map events to a readable schedule
-    console.log(icalText);
     const schedule: ScheduleEvent[] = events
       .map((event) => {
         const e = new ICAL.Event(event);
-        console.log(e.summary);
-        console.log("the e is here", e);
         const courseCodeRegex = /^[A-Za-z]{4}\d{4}$/; // Regex for course codes like COMP4920, FINS2615, etc.
 
         const [course, type] = e.summary.split(" ");
@@ -137,13 +135,13 @@ export async function GET(req: NextRequest) {
           return null; // Skip events that don't match the course code format
         }
 
-        const className = type.includes("Lecture")
+        const className: Enums<"class_type"> = type.includes("Lecture")
           ? "lec"
           : type.includes("Tutorial")
           ? "tut"
           : type.includes("Lab")
           ? "lab"
-          : "Other"; // Class is derived from the event summary text
+          : "other";
 
         if (e.summary.includes("Final")) {
           return null; // Skip events with 'Final' in the summary
@@ -153,7 +151,7 @@ export async function GET(req: NextRequest) {
           startDate: e.startDate.toString(),
           endDate: e.endDate.toString(),
           location: e.location || "No location", // Default location if none exists
-          class: className, // Class is 'Lecture', 'Tutorial', etc.
+          class: className,
         };
       })
       .filter((event) => event !== null); // filter null values
@@ -208,7 +206,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Now perform the upsert operation
-        const { data, error } = await supabase.from("enrolment").upsert({
+        const { error } = await supabase.from("enrolment").upsert({
           user_id: userId,
           course: event.course,
           class: event.class,
