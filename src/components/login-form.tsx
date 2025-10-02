@@ -50,7 +50,6 @@ export function LoginForm({
         .from("profile")
         .select("*")
         .eq("id", user.id); // Do not use `.single()` here
-
       if (profileError) {
         console.error("Profile query error:", profileError);
         throw profileError;
