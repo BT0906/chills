@@ -3,11 +3,12 @@
 import { findInvites, type Squad } from "@/app/actions/find-squad-invites";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link"
 
 export type Member = {
   user_id: string;
@@ -87,11 +88,35 @@ export default function PendingInvites() {
 
   if (loading) return <div className="p-6 text-center">Loading invites...</div>;
   if (!squads.length)
-    return <div className="p-6 text-center text-muted-foreground">No pending invites</div>;
+    return (
+      <div className="container mx-auto max-w-3xl p-6 mt-10 bg-green-200">
+        <h1 className="text-3xl font-bold mb-6 text-foreground">Your Pending Chillers
+        </h1>
+        <div className="mb-6 bg-red-100">
+          Unfortunately, you have no pending chills!
+        </div>
+
+      <div className="mt-40">
+        <Card className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
+          <CardHeader>
+            <CardTitle className="text-white">Ready to Find Your Squad?</CardTitle>
+            <CardDescription className="text-blue-100">
+              Discover students in your courses and form study groups
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="lg" variant="secondary">
+              <Link href="/discover">Find Classmates</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        </div>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto max-w-3xl p-6">
-      <h1 className="text-3xl font-bold mb-6 text-foreground">Pending Squad Invites</h1>
+    <div className="container mx-auto max-w-3xl p-6 mt-10">
+      <h1 className="text-3xl font-bold mb-6 text-foreground">Your Pending Chillers</h1>
       <div className="space-y-6">
         {squads.map((squad) => (
           <Card key={squad.id} className="border shadow-md">
