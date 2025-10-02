@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Convert 'webcal://' to 'https://'
-    const icalUrl = url.replace(/^webcal:/, "https:");
+    const icalUrl = url.trim().replace(/^webcal:/, "https:");
 
     // Fetch iCal data using axios
     const response = await axios.get(icalUrl, { responseType: "text" });
