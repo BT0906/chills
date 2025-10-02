@@ -7,7 +7,7 @@ export interface Meeting {
   end_time: string;
   room_id: string;
 }
-export function useMeetings(squadId: number) {
+export function useMeetings(squadId: number, refreshKey?: number) {
   const supabase = createClient();
   const [meetings, setMeetings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export function useMeetings(squadId: number) {
       setLoading(false);
     }
     fetchMeetings();
-  }, [squadId]);
+  }, [squadId, refreshKey]);
 
   return { meetings, loading };
 }
