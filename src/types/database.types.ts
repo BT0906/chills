@@ -47,9 +47,9 @@ export type Database = {
         Row: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
-          end_time: string | null
+          end_time: string
           id: number
-          room: string
+          room_id: string
           section: string | null
           start_time: string
           user_id: string
@@ -57,9 +57,9 @@ export type Database = {
         Insert: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
-          end_time?: string | null
-          id: number
-          room: string
+          end_time: string
+          id?: number
+          room_id: string
           section?: string | null
           start_time: string
           user_id: string
@@ -67,17 +67,17 @@ export type Database = {
         Update: {
           class?: Database["public"]["Enums"]["class_type"]
           course?: string
-          end_time?: string | null
+          end_time?: string
           id?: number
-          room?: string
+          room_id?: string
           section?: string | null
           start_time?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "enrolment_room_fkey"
-            columns: ["room"]
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "room"
             referencedColumns: ["id"]
@@ -136,24 +136,34 @@ export type Database = {
         Row: {
           created_at: string
           squad_id: number
+          status: Database["public"]["Enums"]["member_type"]
           user_id: string
         }
         Insert: {
           created_at?: string
           squad_id: number
+          status?: Database["public"]["Enums"]["member_type"]
           user_id: string
         }
         Update: {
           created_at?: string
           squad_id?: number
+          status?: Database["public"]["Enums"]["member_type"]
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "member_squad_id_fkey"
             columns: ["squad_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "squad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profile"
             referencedColumns: ["id"]
           },
         ]
@@ -162,7 +172,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string
-          id: number
+          id: string
           is_deleted: boolean
           is_edited: boolean
           sender_id: string
@@ -172,7 +182,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
-          id?: number
+          id?: string
           is_deleted?: boolean
           is_edited?: boolean
           sender_id: string
@@ -182,7 +192,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
-          id?: number
+          id?: string
           is_deleted?: boolean
           is_edited?: boolean
           sender_id?: string
@@ -190,6 +200,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "message_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "message_squad_id_fkey"
             columns: ["squad_id"]
@@ -211,6 +228,7 @@ export type Database = {
           id: string
           last_name: string
           profile_url: string | null
+          user_id: string | null
           zid: string
         }
         Insert: {
@@ -221,9 +239,10 @@ export type Database = {
           first_name: string
           gender?: string | null
           ics_link: string
-          id: string
+          id?: string
           last_name: string
           profile_url?: string | null
+          user_id?: string | null
           zid: string
         }
         Update: {
@@ -237,6 +256,7 @@ export type Database = {
           id?: string
           last_name?: string
           profile_url?: string | null
+          user_id?: string | null
           zid?: string
         }
         Relationships: []
@@ -245,14 +265,17 @@ export type Database = {
         Row: {
           abbr: string
           id: string
+          name: string | null
         }
         Insert: {
           abbr: string
           id: string
+          name?: string | null
         }
         Update: {
           abbr?: string
           id?: string
+          name?: string | null
         }
         Relationships: []
       }
@@ -263,9 +286,9 @@ export type Database = {
           creator_id: string
           description: string | null
           id: number
+          is_deleted: boolean
           name: string
           profile_url: string | null
-          status: Database["public"]["Enums"]["squad_type"]
           visibility: Database["public"]["Enums"]["squad_visibility"]
         }
         Insert: {
@@ -274,9 +297,9 @@ export type Database = {
           creator_id: string
           description?: string | null
           id?: number
+          is_deleted?: boolean
           name: string
           profile_url?: string | null
-          status?: Database["public"]["Enums"]["squad_type"]
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Update: {
@@ -285,23 +308,90 @@ export type Database = {
           creator_id?: string
           description?: string | null
           id?: number
+          is_deleted?: boolean
           name?: string
           profile_url?: string | null
-          status?: Database["public"]["Enums"]["squad_type"]
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      enrolment_with_profile: {
+        Row: {
+          age: number | null
+          bio: string | null
+          class: Database["public"]["Enums"]["class_type"] | null
+          course: string | null
+          degree: string | null
+          end_time: string | null
+          first_name: string | null
+          gender: string | null
+          id: number | null
+          last_name: string | null
+          profile_url: string | null
+          room_id: string | null
+          section: string | null
+          start_time: string | null
+          user_id: string | null
+          zid: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      create_squad: {
+        Args: {
+          p_course: string
+          p_creator_id: string
+          p_description: string
+          p_name: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
+      get_common_courses: {
+        Args: { user_ids: string[] }
+        Returns: {
+          course: string
+        }[]
+      }
+      get_pending_squads_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          course: string
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: number
+          is_deleted: boolean
+          name: string
+          profile_url: string | null
+          visibility: Database["public"]["Enums"]["squad_visibility"]
+        }[]
+      }
+      get_squad_members: {
+        Args: { p_squad_id: number }
+        Returns: {
+          first_name: string
+          joined_at: string
+          last_name: string
+          status: Database["public"]["Enums"]["member_type"]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
-      class_type: "lec" | "tut" | "lab"
-      squad_type: "pending" | "active" | "deleted"
+      class_type: "lec" | "tut" | "lab" | "other"
+      member_type: "pending" | "active" | "left"
       squad_visibility: "open" | "closed"
     }
     CompositeTypes: {
@@ -430,8 +520,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      class_type: ["lec", "tut", "lab"],
-      squad_type: ["pending", "active", "deleted"],
+      class_type: ["lec", "tut", "lab", "other"],
+      member_type: ["pending", "active", "left"],
       squad_visibility: ["open", "closed"],
     },
   },
