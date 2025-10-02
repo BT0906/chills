@@ -1,108 +1,125 @@
-"use client"
+"use client";
 
-import { useState, useMemo, useEffect } from "react"
-import { Search, Users, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import UserCard from "@/components/squad/UserCard"
-import SelectedUsersBar from "@/components/squad/SelectedUsersBar"
-import { AnimatePresence } from "framer-motion"
-import { findClassmates, getCurrentUser } from "@/app/actions/discovery"
-import { generateCourseColor } from "@/lib/utils" // Import color generation function
+import { findClassmates, getCurrentUser } from "@/app/actions/discovery";
+import FormSquadDialog from "@/components/squad/Dialog";
+import SelectedUsersBar from "@/components/squad/SelectedUsersBar";
+import UserCard from "@/components/squad/UserCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { generateCourseColor } from "@/lib/utils"; // Import color generation function
+import { CreateSquadInput } from "@/types/squad";
+import { AnimatePresence } from "framer-motion";
+import { Search, Users, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { createSquad } from "../actions/create-squad";
 
 interface Profile {
-  zid: string
-  first_name: string
-  last_name: string
-  profile_url: string
-  degree: string
-  gender: string
-  age: number
-  bio: string
+  zid: string;
+  first_name: string;
+  last_name: string;
+  profile_url: string;
+  degree: string;
+  gender: string;
+  age: number;
+  bio: string;
 }
 
 interface Enrolment {
-  course: string
-  class_type: "lec" | "tut" | "lab"
-  section: string
-  start_time: string
-  end_time: string
-  room_id: string
+  course: string;
+  class_type: "lec" | "tut" | "lab";
+  section: string;
+  start_time: string;
+  end_time: string;
+  room_id: string;
 }
 
 interface CourseWithCommonFlag {
-  course: string
-  isCommon: boolean
-  enrolments: Enrolment[]
+  course: string;
+  isCommon: boolean;
+  enrolments: Enrolment[];
 }
 
 interface Student extends Profile {
-  enrolments: Enrolment[]
-  commonCourses: string[]
-  allCourses: CourseWithCommonFlag[]
-  sameTutorial: boolean
-  timeOverlap: boolean
-  sameDayAtUni: boolean
+  enrolments: Enrolment[];
+  commonCourses: string[];
+  allCourses: CourseWithCommonFlag[];
+  sameTutorial: boolean;
+  timeOverlap: boolean;
+  sameDayAtUni: boolean;
 }
 
 interface CurrentUser {
-  zid: string
-  first_name: string
-  courses: string[]
+  zid: string;
+  first_name: string;
+  courses: string[];
   enrolments: Array<{
-    course: string
-    class: string
-    section: string | null
-    start_time: string
-    end_time: string
-  }>
+    course: string;
+    class: string;
+    section: string | null;
+    start_time: string;
+    end_time: string;
+  }>;
 }
 
 const SquadFormation = () => {
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
-  const [students, setStudents] = useState<Student[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterCourse, setFilterCourse] = useState<string[]>([])
-  const [showSameTutorial, setShowSameTutorial] = useState(false)
-  const [showTimeOverlap, setShowTimeOverlap] = useState(false)
-  const [showSameDay, setShowSameDay] = useState(false)
-  const [filterGender, setFilterGender] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState<"commonCourses" | "name">("commonCourses")
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCourse, setFilterCourse] = useState<string[]>([]);
+  const [showSameTutorial, setShowSameTutorial] = useState(false);
+  const [showTimeOverlap, setShowTimeOverlap] = useState(false);
+  const [showSameDay, setShowSameDay] = useState(false);
+  const [filterGender, setFilterGender] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<"commonCourses" | "name">(
+    "commonCourses"
+  );
 
   const courseColors = useMemo(() => {
-    if (!currentUser) return {}
-    const colors: Record<string, { bg: string; text: string; border: string }> = {}
+    if (!currentUser) return {};
+    const colors: Record<string, { bg: string; text: string; border: string }> =
+      {};
     currentUser.courses.forEach((course) => {
-      colors[course] = generateCourseColor(course)
-    })
-    return colors
-  }, [currentUser])
+      colors[course] = generateCourseColor(course);
+    });
+    return colors;
+  }, [currentUser]);
 
   useEffect(() => {
     async function loadData() {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       // Get current user
-      const userResult = await getCurrentUser()
+      const userResult = await getCurrentUser();
       if (!userResult.success) {
-        setError(userResult.error)
-        setIsLoading(false)
-        return
+        setError(userResult.error);
+        setIsLoading(false);
+        return;
       }
 
-      const { profile, enrolments } = userResult.data
+      const { profile, enrolments } = userResult.data;
 
       // Extract unique courses from enrolments
-      const userCourses = Array.from(new Set(enrolments.map((e: any) => e.course)))
+      const userCourses = Array.from(
+        new Set(enrolments.map((e: any) => e.course))
+      );
 
-      const userClassDays = new Set(enrolments.map((e: any) => new Date(e.start_time).toISOString().split("T")[0]))
+      const userClassDays = new Set(
+        enrolments.map(
+          (e: any) => new Date(e.start_time).toISOString().split("T")[0]
+        )
+      );
 
       const user: CurrentUser = {
         zid: profile.zid,
@@ -115,200 +132,258 @@ const SquadFormation = () => {
           start_time: e.start_time,
           end_time: e.end_time,
         })),
-      }
-      setCurrentUser(user)
+      };
+      setCurrentUser(user);
 
       // Get classmates
-      const classmatesResult = await findClassmates(userResult.data.userId)
+      const classmatesResult = await findClassmates(userResult.data.userId);
       if (!classmatesResult.success) {
-        setError(classmatesResult.error)
-        setIsLoading(false)
-        return
+        setError(classmatesResult.error);
+        setIsLoading(false);
+        return;
       }
 
       // Transform classmates data to match Student interface
-      const transformedStudents: Student[] = classmatesResult.data.map((classmate: any) => {
-        const allCoursesMap = new Map<string, Enrolment[]>()
-        classmate.courses.forEach((c: any) => {
-          const courseEnrolments = c.enrolments.map((e: any) => ({
-            course: c.course,
-            class_type: e.class as "lec" | "tut" | "lab",
-            section: e.section || "",
-            start_time: e.start_time,
-            end_time: e.end_time,
-            room_id: e.room_id,
-          }))
-          allCoursesMap.set(c.course, courseEnrolments)
-        })
+      const transformedStudents: Student[] = classmatesResult.data.map(
+        (classmate: any) => {
+          const allCoursesMap = new Map<string, Enrolment[]>();
+          classmate.courses.forEach((c: any) => {
+            const courseEnrolments = c.enrolments.map((e: any) => ({
+              course: c.course,
+              class_type: e.class as "lec" | "tut" | "lab",
+              section: e.section || "",
+              start_time: e.start_time,
+              end_time: e.end_time,
+              room_id: e.room_id,
+            }));
+            allCoursesMap.set(c.course, courseEnrolments);
+          });
 
-        const courses = Array.from(allCoursesMap.keys())
-        const commonCourses = courses.filter((course: string) => userCourses.includes(course))
+          const courses = Array.from(allCoursesMap.keys());
+          const commonCourses = courses.filter((course: string) =>
+            userCourses.includes(course)
+          );
 
-        const allCourses: CourseWithCommonFlag[] = courses.map((course) => ({
-          course,
-          isCommon: userCourses.includes(course),
-          enrolments: allCoursesMap.get(course) || [],
-        }))
+          const allCourses: CourseWithCommonFlag[] = courses.map((course) => ({
+            course,
+            isCommon: userCourses.includes(course),
+            enrolments: allCoursesMap.get(course) || [],
+          }));
 
-        // Flatten enrolments
-        const allEnrolments = Array.from(allCoursesMap.values()).flat()
+          // Flatten enrolments
+          const allEnrolments = Array.from(allCoursesMap.values()).flat();
 
-        // Check if same tutorial
-        const sameTutorial = user.enrolments.some((userEnrol) =>
-          allEnrolments.some(
-            (classEnrol) =>
-              userEnrol.course === classEnrol.course &&
-              userEnrol.class === "tut" &&
-              classEnrol.class_type === "tut" &&
-              userEnrol.section === classEnrol.section,
-          ),
-        )
+          // Check if same tutorial
+          const sameTutorial = user.enrolments.some((userEnrol) =>
+            allEnrolments.some(
+              (classEnrol) =>
+                userEnrol.course === classEnrol.course &&
+                userEnrol.class === "tut" &&
+                classEnrol.class_type === "tut" &&
+                userEnrol.section === classEnrol.section
+            )
+          );
 
-        // Check if time overlap
-        const timeOverlap = user.enrolments.some((userEnrol) =>
-          allEnrolments.some((classEnrol) => {
-            if (userEnrol.course !== classEnrol.course) return false
+          // Check if time overlap
+          const timeOverlap = user.enrolments.some((userEnrol) =>
+            allEnrolments.some((classEnrol) => {
+              if (userEnrol.course !== classEnrol.course) return false;
 
-            const userStart = new Date(userEnrol.start_time).getTime()
-            const userEnd = new Date(userEnrol.end_time).getTime()
-            const classStart = new Date(classEnrol.start_time).getTime()
-            const classEnd = new Date(classEnrol.end_time).getTime()
+              const userStart = new Date(userEnrol.start_time).getTime();
+              const userEnd = new Date(userEnrol.end_time).getTime();
+              const classStart = new Date(classEnrol.start_time).getTime();
+              const classEnd = new Date(classEnrol.end_time).getTime();
 
-            // Check if times overlap
-            return userStart < classEnd && classStart < userEnd
-          }),
-        )
+              // Check if times overlap
+              return userStart < classEnd && classStart < userEnd;
+            })
+          );
 
-        const classmateClassDays = new Set(allEnrolments.map((e) => new Date(e.start_time).toISOString().split("T")[0]))
-        const sameDayAtUni = Array.from(userClassDays).some((day) => classmateClassDays.has(day))
+          const classmateClassDays = new Set(
+            allEnrolments.map(
+              (e) => new Date(e.start_time).toISOString().split("T")[0]
+            )
+          );
+          const sameDayAtUni = Array.from(userClassDays).some((day) =>
+            classmateClassDays.has(day)
+          );
 
-        return {
-          zid: classmate.zid,
-          first_name: classmate.first_name,
-          last_name: classmate.last_name,
-          profile_url:
-            classmate.profile_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${classmate.first_name}`,
-          degree: classmate.degree,
-          gender: classmate.gender,
-          age: classmate.age || 0,
-          bio: classmate.bio,
-          enrolments: allEnrolments,
-          commonCourses,
-          allCourses,
-          sameTutorial,
-          timeOverlap,
-          sameDayAtUni,
+          return {
+            zid: classmate.zid,
+            first_name: classmate.first_name,
+            last_name: classmate.last_name,
+            profile_url:
+              classmate.profile_url ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${classmate.first_name}`,
+            degree: classmate.degree,
+            gender: classmate.gender,
+            age: classmate.age || 0,
+            bio: classmate.bio,
+            enrolments: allEnrolments,
+            commonCourses,
+            allCourses,
+            sameTutorial,
+            timeOverlap,
+            sameDayAtUni,
+          };
         }
-      })
+      );
 
-      setStudents(transformedStudents)
-      setIsLoading(false)
+      setStudents(transformedStudents);
+      setIsLoading(false);
     }
 
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   const commonCoursesIntersection = useMemo(() => {
-    if (selectedUsers.length === 0) return []
+    if (selectedUsers.length === 0) return [];
 
-    const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
-    let intersection = new Set(selectedStudents[0].commonCourses)
+    const selectedStudents = students.filter((s) =>
+      selectedUsers.includes(s.zid)
+    );
+    let intersection = new Set(selectedStudents[0].commonCourses);
 
     for (let i = 1; i < selectedStudents.length; i++) {
-      const studentCourses = new Set(selectedStudents[i].commonCourses)
-      intersection = new Set([...intersection].filter((course) => studentCourses.has(course)))
+      const studentCourses = new Set(selectedStudents[i].commonCourses);
+      intersection = new Set(
+        [...intersection].filter((course) => studentCourses.has(course))
+      );
     }
 
-    return Array.from(intersection)
-  }, [selectedUsers, students])
+    return Array.from(intersection);
+  }, [selectedUsers, students]);
 
   useEffect(() => {
     if (selectedUsers.length === 0) {
-      setFilterCourse([])
+      setFilterCourse([]);
     } else {
-      setFilterCourse(commonCoursesIntersection)
+      setFilterCourse(commonCoursesIntersection);
     }
-  }, [selectedUsers, commonCoursesIntersection])
+  }, [selectedUsers, commonCoursesIntersection]);
 
   const squadCourse = useMemo(() => {
-    if (filterCourse.length === 1) return filterCourse[0]
-    if (commonCoursesIntersection.length === 1) return commonCoursesIntersection[0]
-    return null
-  }, [filterCourse, commonCoursesIntersection])
+    if (filterCourse.length === 1) return filterCourse[0];
+    if (commonCoursesIntersection.length === 1)
+      return commonCoursesIntersection[0];
+    return null;
+  }, [filterCourse, commonCoursesIntersection]);
 
   const toggleUserSelection = (zid: string) => {
     setSelectedUsers((prev) => {
-      const isCurrentlySelected = prev.includes(zid)
+      const isCurrentlySelected = prev.includes(zid);
 
       if (isCurrentlySelected) {
-        return prev.filter((id) => id !== zid)
+        return prev.filter((id) => id !== zid);
       } else {
-        return [...prev, zid]
+        return [...prev, zid];
       }
-    })
-  }
+    });
+  };
 
   const toggleCourseFilter = (course: string) => {
-    if (selectedUsers.length > 0 && !commonCoursesIntersection.includes(course)) {
-      return // Don't allow toggling disabled filters
+    if (
+      selectedUsers.length > 0 &&
+      !commonCoursesIntersection.includes(course)
+    ) {
+      return; // Don't allow toggling disabled filters
     }
-    setFilterCourse((prev) => (prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]))
-  }
+    setFilterCourse((prev) =>
+      prev.includes(course)
+        ? prev.filter((c) => c !== course)
+        : [...prev, course]
+    );
+  };
 
   const toggleGenderFilter = (gender: string) => {
-    setFilterGender((prev) => (prev.includes(gender) ? prev.filter((g) => g !== gender) : [...prev, gender]))
-  }
+    setFilterGender((prev) =>
+      prev.includes(gender)
+        ? prev.filter((g) => g !== gender)
+        : [...prev, gender]
+    );
+  };
 
   const deselectAll = () => {
-    setSelectedUsers([])
-    setFilterCourse([])
-  }
+    setSelectedUsers([]);
+    setFilterCourse([]);
+  };
 
   const clearAllFilters = () => {
-    setFilterCourse([])
-    setShowSameTutorial(false)
-    setShowTimeOverlap(false)
-    setShowSameDay(false)
-    setFilterGender([])
-    setSearchQuery("")
-  }
+    setFilterCourse([]);
+    setShowSameTutorial(false);
+    setShowTimeOverlap(false);
+    setShowSameDay(false);
+    setFilterGender([]);
+    setSearchQuery("");
+  };
 
   const activeFilterCount =
     filterCourse.length +
     (showSameTutorial ? 1 : 0) +
     (showTimeOverlap ? 1 : 0) +
     (showSameDay ? 1 : 0) +
-    filterGender.length
+    filterGender.length;
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.zid.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.degree.toLowerCase().includes(searchQuery.toLowerCase())
+      student.degree.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (!matchesSearch) return false
+    if (!matchesSearch) return false;
 
     if (filterCourse.length > 0) {
-      const hasSelectedCourse = student.allCourses.some((courseData) => filterCourse.includes(courseData.course))
-      if (!hasSelectedCourse) return false
+      const hasSelectedCourse = student.allCourses.some((courseData) =>
+        filterCourse.includes(courseData.course)
+      );
+      if (!hasSelectedCourse) return false;
     }
 
-    if (showSameTutorial && !student.sameTutorial) return false
+    if (showSameTutorial && !student.sameTutorial) return false;
 
-    if (showTimeOverlap && !student.timeOverlap) return false
+    if (showTimeOverlap && !student.timeOverlap) return false;
 
-    if (showSameDay && !student.sameDayAtUni) return false
+    if (showSameDay && !student.sameDayAtUni) return false;
 
-    if (filterGender.length > 0 && !filterGender.includes(student.gender)) return false
+    if (filterGender.length > 0 && !filterGender.includes(student.gender))
+      return false;
 
-    return true
-  })
+    return true;
+  });
 
-  const handleFormSquad = () => {
-    const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
-    console.log("[v0] Forming squad with:", selectedStudents)
-  }
+  const handleFormSquad = async (
+    name: string,
+    description: string,
+    course: string,
+    currentUserId: string
+  ) => {
+    // Filter to only selected students
+    const selectedStudents = students.filter((s) =>
+      selectedUsers.includes(s.zid)
+    );
+  
+    // Map to squad input
+    const squadInput: CreateSquadInput = {
+      name,
+      description,
+      course,
+      creator_id: currentUserId,
+      user_ids: selectedStudents.map((s) => s.zid), // 👈 just extract the zid
+    };
+  
+    console.log("[v0] Squad payload:", squadInput);
+  
+    // Call your SQL RPC
+    const result = await createSquad(squadInput);
+  
+    if (result.success) {
+      console.log("✅ Squad created with ID:", result.squad_id);
+      // route.push(`/squad/${result.squad_id}`)
+    } else {
+      console.error("❌ Error creating squad:", result.error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -320,7 +395,7 @@ const SquadFormation = () => {
           <p className="text-sm text-muted-foreground">Loading classmates...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !currentUser) {
@@ -331,11 +406,13 @@ const SquadFormation = () => {
             <X className="h-6 w-6 text-destructive" />
           </div>
           <h3 className="text-lg font-semibold mb-2">Failed to load data</h3>
-          <p className="text-sm text-muted-foreground mb-4">{error || "Unable to fetch user data"}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            {error || "Unable to fetch user data"}
+          </p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -352,14 +429,20 @@ const SquadFormation = () => {
                   SquadUp
                 </h1>
                 <p className="text-xs md:text-sm text-muted-foreground leading-tight">
-                  {squadCourse ? `Forming squad for ${squadCourse}` : "Find your perfect study squad"}
+                  {squadCourse
+                    ? `Forming squad for ${squadCourse}`
+                    : "Find your perfect study squad"}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-sm font-semibold text-foreground leading-tight">{currentUser.first_name}</p>
-              <p className="text-xs text-muted-foreground leading-tight">{currentUser.zid}</p>
+              <p className="text-sm font-semibold text-foreground leading-tight">
+                {currentUser.first_name}
+              </p>
+              <p className="text-xs text-muted-foreground leading-tight">
+                {currentUser.zid}
+              </p>
             </div>
           </div>
 
@@ -377,7 +460,9 @@ const SquadFormation = () => {
         <div className="border-t bg-muted/30">
           <div className="container mx-auto px-4 py-2.5">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-xs font-semibold text-foreground shrink-0">Filters:</h3>
+              <h3 className="text-xs font-semibold text-foreground shrink-0">
+                Filters:
+              </h3>
               {activeFilterCount > 0 && (
                 <Button
                   variant="ghost"
@@ -410,9 +495,11 @@ const SquadFormation = () => {
                       bg: "bg-gray-500/15",
                       text: "text-gray-700",
                       border: "border-gray-500/30",
-                    }
-                    const isDisabled = selectedUsers.length > 0 && !commonCoursesIntersection.includes(course)
-                    const isActive = filterCourse.includes(course)
+                    };
+                    const isDisabled =
+                      selectedUsers.length > 0 &&
+                      !commonCoursesIntersection.includes(course);
+                    const isActive = filterCourse.includes(course);
 
                     const button = (
                       <button
@@ -423,26 +510,28 @@ const SquadFormation = () => {
                           isDisabled
                             ? "bg-muted/50 text-muted-foreground/40 border-border/30 cursor-not-allowed opacity-50"
                             : isActive
-                              ? `${colors.bg} ${colors.text} ${colors.border} shadow-md`
-                              : "bg-background text-muted-foreground border-border hover:border-foreground/20 opacity-60 hover:opacity-100"
+                            ? `${colors.bg} ${colors.text} ${colors.border} shadow-md`
+                            : "bg-background text-muted-foreground border-border hover:border-foreground/20 opacity-60 hover:opacity-100"
                         }`}
                       >
                         {course}
                       </button>
-                    )
+                    );
 
                     if (isDisabled) {
                       return (
                         <Tooltip key={course}>
                           <TooltipTrigger asChild>{button}</TooltipTrigger>
                           <TooltipContent>
-                            <p className="text-xs">No selected students have {course} in common</p>
+                            <p className="text-xs">
+                              No selected students have {course} in common
+                            </p>
                           </TooltipContent>
                         </Tooltip>
-                      )
+                      );
                     }
 
-                    return button
+                    return button;
                   })}
                 </div>
               </TooltipProvider>
@@ -532,7 +621,10 @@ const SquadFormation = () => {
       <main className="container mx-auto px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Found <span className="font-semibold text-foreground">{filteredStudents.length}</span>{" "}
+            Found{" "}
+            <span className="font-semibold text-foreground">
+              {filteredStudents.length}
+            </span>{" "}
             {filteredStudents.length === 1 ? "student" : "students"}
           </p>
           {selectedUsers.length > 0 && (
@@ -559,8 +651,12 @@ const SquadFormation = () => {
         {filteredStudents.length === 0 && (
           <div className="text-center py-16">
             <Users className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No students found</h3>
-            <p className="text-sm text-muted-foreground mb-4">Try adjusting your filters or search query</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No students found
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Try adjusting your filters or search query
+            </p>
             {activeFilterCount > 0 && (
               <Button variant="outline" onClick={clearAllFilters}>
                 Clear All Filters
@@ -575,7 +671,9 @@ const SquadFormation = () => {
           <SelectedUsersBar
             selectedUsers={selectedUsers}
             students={students}
-            onRemove={(zid) => setSelectedUsers((prev) => prev.filter((id) => id !== zid))}
+            onRemove={(zid) =>
+              setSelectedUsers((prev) => prev.filter((id) => id !== zid))
+            }
             onFormSquad={handleFormSquad}
             squadCourse={squadCourse}
             commonCoursesIntersection={commonCoursesIntersection}
@@ -583,7 +681,7 @@ const SquadFormation = () => {
         )}
       </AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
-export default SquadFormation
+export default SquadFormation;

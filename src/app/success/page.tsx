@@ -5,8 +5,8 @@ import { useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Check, MessageSquare } from "lucide-react"
-import { PlaceholdersAndVanishInput } from "../../../components/ui/placeholders-and-vanish-input";
-import { Confetti, type ConfettiRef } from "../../../components/ui/confetti"
+import { PlaceholdersAndVanishInput } from "../../components/ui/placeholders-and-vanish-input";
+import { Confetti, type ConfettiRef } from "../../components/ui/confetti"
 
 export default function SuccessPage() {
     const confettiRef = useRef<ConfettiRef>(null)
