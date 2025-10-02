@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 export default function TimetablePreviewPage() {
   const [icalLink, setIcalLink] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<ScheduleEvent[]>([]); // State to hold the schedule events
   const router = useRouter();
@@ -199,50 +199,15 @@ export default function TimetablePreviewPage() {
                 </div>
               </div>
 
-              {/* Schedule */}
-              <div className="mb-8 mt-35">
-                <h2 className="text-xl font-semibold text-foreground mb-4">
-                  Weekly Schedule
-                </h2>
-                <div className="bg-card rounded-xl border border-border overflow-hidden">
-                  <div className="divide-y divide-border">
-                    {schedule.map((item, index) => (
-                      <div
-                        key={index}
-                        className="p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-1">
-                              <span className="font-medium text-foreground">
-                                {item.startDate}
-                              </span>
-                              <span className="text-sm text-muted-foreground">
-                                {item.endDate}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground">
-                                {item.location}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
+              <div className="flex gap-3 mt-50">
+                {/* <Button
                   type="button"
                   variant="outline"
                   className="flex-1 h-12 bg-transparent"
                   asChild
                 >
                   <Link href="/onboarding/timetable">Back</Link>
-                </Button>
+                </Button> */}
                 <Button className="flex-1 h-12" asChild>
                   <Link href="/dashboard">Continue to Dashboard</Link>
                 </Button>
