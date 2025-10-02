@@ -390,7 +390,7 @@ export type Database = {
       }
     }
     Enums: {
-      class_type: "lec" | "tut" | "lab"
+      class_type: "lec" | "tut" | "lab" | "other"
       member_type: "pending" | "active" | "left"
       squad_visibility: "open" | "closed"
     }
@@ -520,7 +520,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      class_type: ["lec", "tut", "lab"],
+      class_type: ["lec", "tut", "lab", "other"],
       member_type: ["pending", "active", "left"],
       squad_visibility: ["open", "closed"],
     },

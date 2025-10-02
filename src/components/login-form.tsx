@@ -44,12 +44,16 @@ export function LoginForm({
       });
 
       if (signInError || !user) throw signInError;
-
+      console.log(JSON.stringify(user));
       // Step 1: Check if the user has a profile
       const { data: profiles, error: profileError } = await supabase
         .from("profile")
         .select("*")
         .eq("id", user.id); // Do not use `.single()` here
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0c7a18e89bc393943fa597cc710211bacef3e686
       if (profileError) {
         console.error("Profile query error:", profileError);
         throw profileError;
