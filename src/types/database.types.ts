@@ -378,9 +378,19 @@ export type Database = {
           visibility: Database["public"]["Enums"]["squad_visibility"]
         }[]
       }
+      get_squad_members: {
+        Args: { p_squad_id: number }
+        Returns: {
+          first_name: string
+          joined_at: string
+          last_name: string
+          status: Database["public"]["Enums"]["member_type"]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
-      class_type: "lec" | "tut" | "lab"
+      class_type: "lec" | "tut" | "lab" | "other"
       member_type: "pending" | "active" | "left"
       squad_visibility: "open" | "closed"
     }
@@ -510,7 +520,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      class_type: ["lec", "tut", "lab"],
+      class_type: ["lec", "tut", "lab", "other"],
       member_type: ["pending", "active", "left"],
       squad_visibility: ["open", "closed"],
     },
