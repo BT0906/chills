@@ -141,7 +141,7 @@ export async function GET(req: NextRequest) {
           ? "tut"
           : type.includes("Lab")
           ? "lab"
-          : "other"; // Class is derived from the event summary text
+          : "other";
 
         if (e.summary.includes("Final")) {
           return null; // Skip events with 'Final' in the summary
