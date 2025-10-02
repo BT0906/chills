@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getUserCourses } from "@/app/actions/discovery"
-import { getPendingInvitations } from "@/app/actions/squad"
 import Link from "next/link"
 import { useUser } from "@/hooks/use-user"
 import { useProfile } from "@/hooks/use-profile"
@@ -36,12 +35,6 @@ export default function DashboardPage() {
         const result = await getUserCourses(user.id)
         if (result.success && result.data) {
           setCourses(result.data)
-        }
-
-        // Get invitation count
-        const invitationsResult = await getPendingInvitations(user.id)
-        if (invitationsResult.success && invitationsResult.data) {
-          setInvitationCount(invitationsResult.data.length)
         }
       } catch (error) {
         console.error("[v0] Error loading dashboard:", error)
@@ -85,7 +78,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href="/squads">My Squads</Link>
+              <Link href="/invites">My Squads</Link>
             </Button>
             {invitationCount > 0 && (
               <Button asChild variant="outline">
