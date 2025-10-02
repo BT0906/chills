@@ -52,7 +52,7 @@ export default function TimetablePreviewPage() {
         console.error("Error fetching user profile:", err);
         setError("An error occurred while fetching the iCal link.");
       } finally {
-        setLoading(false);
+        setLoading(true);
       }
     };
 
@@ -95,7 +95,7 @@ export default function TimetablePreviewPage() {
 
   // Automatically call handleSubmit when the component mounts
   useEffect(() => {
-    if (icalLink && icalLink.trim() !== " " && !loading) {
+    if (icalLink && icalLink.trim() !== " ") {
       handleSubmit();
     }
   }, [icalLink]);
