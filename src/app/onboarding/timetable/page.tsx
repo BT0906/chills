@@ -10,6 +10,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+// Define the profile data type (including ics_link)
+interface ProfileData {
+  first_name: string;
+  last_name: string;
+  zid: string;
+  profile_url: string;
+  degree: string;
+  gender?: string;
+  age?: number;
+  bio?: string;
+  ics_link?: string; // Add ics_link to the profile data type
+}
+
 export default function TimetableSetupPage() {
   const [icalLink, setIcalLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -39,7 +52,7 @@ export default function TimetableSetupPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+    localStorage.setItem("icallink", icalLink);
     try {
       // Get the user object from Supabase
       const { data, error: userError } = await supabase.auth.getUser();
