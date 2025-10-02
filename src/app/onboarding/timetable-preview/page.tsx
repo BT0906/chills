@@ -1,6 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import FullCalendar from "@fullcalendar/react";
+import rrulePlugin from "@fullcalendar/rrule";
 import axios from "axios";
 import { Check } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +14,7 @@ export default function TimetablePreviewPage() {
   const [icalLink, setIcalLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [calevents, setCalEvents] = useState<ScheduleEvent[]>([]);
   const [schedule, setSchedule] = useState<ScheduleEvent[]>([]); // State to hold the schedule events
   const router = useRouter();
 
@@ -59,6 +63,119 @@ export default function TimetablePreviewPage() {
     fetchUserProfile();
   }, []);
 
+  const fetchCalEvents = async () => {
+    try {
+      console.log("link I'm sending is", icalLink);
+      const response = await axios.get(
+        `/api/cal-events?icalUrl=${encodeURIComponent(icalLink)}`
+      );
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        const seenEventTitles: Set<string> = new Set();
+        const tempEvents: any[] = [];
+        // const parsedEvents = response.data.events.map((event: any) => {
+        //   const startDate = event[1].find(
+        //     (item: any) => item[0] === "dtstart"
+        //   )?.[3];
+        //   const endDate = event[1].find(
+        //     (item: any) => item[0] === "dtend"
+        //   )?.[3];
+        //   const title = event[1].find(
+        //     (item: any) => item[0] === "summary"
+        //   )?.[3];
+        //   const description = event.description || "";
+        //   const location =
+        //     event[1].find((item: any) => item[0] === "location")?.[3] || "N/A";
+        //   const rrule = event[1].find((item: any) => item[0] === "rrule")?.[3];
+
+        response.data.events.forEach((event: any) => {
+          // Extract necessary fields from the raw iCal event
+          const startDate = event[1].find(
+            (item: any) => item[0] === "dtstart"
+          )?.[3];
+          const endDate = event[1].find(
+            (item: any) => item[0] === "dtend"
+          )?.[3];
+          const title = event[1].find(
+            (item: any) => item[0] === "summary"
+          )?.[3];
+          const description = event.description || "";
+          const location =
+            event[1].find((item: any) => item[0] === "location")?.[3] || "N/A";
+          const rrule = event[1].find((item: any) => item[0] === "rrule")?.[3];
+
+          console.log("Raw rrule object:", rrule); // Log to inspect the raw rrule
+
+          let byday = rrule?.byday || [];
+          if (typeof byday === "string") {
+            byday = [byday];
+          }
+
+          const validByday = byday
+            .map((day: string) => {
+              const dayMap: { [key: string]: string } = {
+                MO: "mo",
+                TU: "tu",
+                WE: "we",
+                TH: "th",
+                FR: "fr",
+                SA: "sa",
+                SU: "su",
+              };
+              return dayMap[day] || "";
+            })
+            .filter((day) => day !== "");
+
+          const rruleObject = rrule
+            ? {
+                ...rrule,
+                byweekday: validByday.length > 0 ? validByday : undefined,
+              }
+            : null;
+          if (rruleObject) {
+            delete rruleObject.byday;
+          }
+
+          console.log("Transformed rrule object:", rruleObject); // Log the transformed rrule
+          if (!seenEventTitles.has(title)) {
+            seenEventTitles.add(title); // Mark this event as processed
+
+            // Push only the first occurrence event (we're assuming this to be the correct event)
+            tempEvents.push({
+              title,
+              start: startDate, // Ensure it's in ISO 8601 format
+              end: endDate, // Ensure it's in ISO 8601 format
+              description,
+              location,
+              rrule: rruleObject, // Use the modified rrule object
+            });
+          }
+          // return {
+          //   title,
+          //   start: startDate,
+          //   end: endDate,
+          //   description,
+          //   location,
+          //   rrule: rruleObject,
+          // };
+        });
+
+        // setCalEvents(uniqueEvents);
+        setCalEvents(tempEvents);
+        console.log(tempEvents);
+      } else {
+        setError("Failed to fetch timetable data");
+      }
+    } catch (err) {
+      console.error("Error fetching iCal events:", err);
+      setError("An error occurred while fetching the live timetable.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Function to fetch timetable data
   const handleSubmit = async (e?: React.FormEvent) => {
     // Only prevent the default behavior if this is called from a form submission
@@ -82,6 +199,7 @@ export default function TimetablePreviewPage() {
       console.error("Error fetching iCal data:", err);
       setError("An error occurred while fetching the timetable.");
     } finally {
+      fetchCalEvents();
       setLoading(false);
     }
   };
@@ -197,6 +315,20 @@ export default function TimetablePreviewPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="mb-8 mt-35">
+                <h2 className="text-xl font-semibold text-foreground mb-4">
+                  Your Weekly Schedule
+                </h2>
+                <FullCalendar
+                  plugins={[dayGridPlugin, rrulePlugin]}
+                  initialView="dayGridMonth"
+                  events={calevents}
+                  eventClick={(info) => {
+                    alert(info.event.title);
+                  }}
+                />
               </div>
 
               {/* Schedule */}
