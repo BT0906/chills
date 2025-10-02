@@ -10,6 +10,7 @@ export interface Squad {
   visibility: SquadVisibility
   is_deleted: boolean
   created_at?: string
+  members?: Member[];
 }
 
 export interface Member {
@@ -18,6 +19,7 @@ export interface Member {
   user_id: string
   status: MemberStatus
   joined_at?: string
+  name?: string
 }
 
 export interface CreateSquadInput {
