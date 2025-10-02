@@ -14,7 +14,7 @@ export type RealtimeUser = {
   image: string;
 };
 
-export const useRealtimePresenceRoom = (squadId: number) => {
+export const useRealtimePresenceSquad = (squadId: number) => {
   const currentUserImage = useCurrentUserImage();
   const currentUserName = useCurrentUserName();
 
@@ -51,5 +51,14 @@ export const useRealtimePresenceRoom = (squadId: number) => {
     };
   }, [squadId, currentUserName, currentUserImage]);
 
-  return { users };
+  const trackPresence = (userId: string, username: string) => {
+    const channel = supabase.channel(getSquadChannelName(squadId));
+
+    channel.track({
+      user_id: userId,
+      username: username,
+    });
+  };
+
+  return { users, trackPresence };
 };

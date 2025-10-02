@@ -159,6 +159,13 @@ export type Database = {
             referencedRelation: "squad"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "member_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
         ]
       }
       message: {

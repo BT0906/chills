@@ -16,7 +16,8 @@ export const useMessagesQuery = (squadId: number | null | undefined) => {
           profile (
             user_id,
             first_name,
-            last_name
+            last_name,
+            profile_url
           )
         `
         )
@@ -41,6 +42,7 @@ export const useMessagesQuery = (squadId: number | null | undefined) => {
           message?.profile?.first_name,
           message.profile?.last_name
         ),
+        image: message?.profile?.profile_url || "",
       },
       squadId: message.squad_id,
       createdAt: message.created_at,
