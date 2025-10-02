@@ -5,6 +5,7 @@ import { TablesInsert } from "@/types/database.types";
 export const storeMessages = async (messages: ChatMessage[]) => {
   const supabase = createClient();
   const processedMessages: TablesInsert<"message">[] = messages.map((msg) => ({
+    id: msg.id,
     body: msg.content,
     sender_id: msg.user.id,
     squad_id: msg.squadId,
