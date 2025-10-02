@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import UserCard from "@/components/squad/UserCard"
 import SelectedUsersBar from "@/components/squad/SelectedUsersBar"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { findClassmates, getCurrentUser } from "@/app/actions/discovery"
 import { generateCourseColor } from "@/lib/utils" // Import color generation function
 
@@ -290,8 +290,8 @@ const SquadFormation = () => {
     if (!matchesSearch) return false
 
     if (filterCourse.length > 0) {
-      const hasCourse = student.commonCourses.some((course) => filterCourse.includes(course))
-      if (!hasCourse) return false
+      const hasSelectedCourse = student.allCourses.some((courseData) => filterCourse.includes(courseData.course))
+      if (!hasSelectedCourse) return false
     }
 
     if (showSameTutorial && !student.sameTutorial) return false
@@ -305,12 +305,6 @@ const SquadFormation = () => {
     return true
   })
 
-  if (sortBy === "commonCourses") {
-    filteredStudents.sort((a, b) => b.commonCourses.length - a.commonCourses.length)
-  } else {
-    filteredStudents.sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`))
-  }
-
   const handleFormSquad = () => {
     const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
     console.log("[v0] Forming squad with:", selectedStudents)
@@ -320,13 +314,9 @@ const SquadFormation = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-            className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center"
-          >
+          <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center">
             <Users className="h-6 w-6 text-white" />
-          </motion.div>
+          </div>
           <p className="text-sm text-muted-foreground">Loading classmates...</p>
         </div>
       </div>
@@ -350,21 +340,13 @@ const SquadFormation = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="border-b bg-card/95 backdrop-blur-xl sticky top-0 z-40 shadow-sm"
-      >
+      <header className="border-b bg-card/95 backdrop-blur-xl sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-                className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg"
-              >
+              <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
                 <Users className="h-5 w-5 md:h-6 md:w-6 text-white" />
-              </motion.div>
+              </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
                   SquadUp
@@ -433,10 +415,8 @@ const SquadFormation = () => {
                     const isActive = filterCourse.includes(course)
 
                     const button = (
-                      <motion.button
+                      <button
                         key={course}
-                        whileHover={{ scale: isDisabled ? 1 : 1.05 }}
-                        whileTap={{ scale: isDisabled ? 1 : 0.95 }}
                         onClick={() => toggleCourseFilter(course)}
                         disabled={isDisabled}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 ${
@@ -444,11 +424,11 @@ const SquadFormation = () => {
                             ? "bg-muted/50 text-muted-foreground/40 border-border/30 cursor-not-allowed opacity-50"
                             : isActive
                               ? `${colors.bg} ${colors.text} ${colors.border} shadow-md`
-                              : "bg-background text-muted-foreground border-border hover:border-foreground/20"
+                              : "bg-background text-muted-foreground border-border hover:border-foreground/20 opacity-60 hover:opacity-100"
                         }`}
                       >
                         {course}
-                      </motion.button>
+                      </button>
                     )
 
                     if (isDisabled) {
@@ -470,9 +450,7 @@ const SquadFormation = () => {
               <div className="w-px bg-border shrink-0" />
 
               <div className="flex gap-1.5 shrink-0">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   onClick={() => setShowSameDay(!showSameDay)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                     showSameDay
@@ -481,10 +459,8 @@ const SquadFormation = () => {
                   }`}
                 >
                   Same Day
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                   onClick={() => setShowSameTutorial(!showSameTutorial)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                     showSameTutorial
@@ -493,10 +469,8 @@ const SquadFormation = () => {
                   }`}
                 >
                   Same Tutorial
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                   onClick={() => setShowTimeOverlap(!showTimeOverlap)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                     showTimeOverlap
@@ -505,17 +479,15 @@ const SquadFormation = () => {
                   }`}
                 >
                   Time Match
-                </motion.button>
+                </button>
               </div>
 
               <div className="w-px bg-border shrink-0" />
 
               <div className="flex gap-1.5 shrink-0">
                 {["Male", "Female", "Other"].map((gender) => (
-                  <motion.button
+                  <button
                     key={gender}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                     onClick={() => toggleGenderFilter(gender)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                       filterGender.includes(gender)
@@ -524,16 +496,14 @@ const SquadFormation = () => {
                     }`}
                   >
                     {gender}
-                  </motion.button>
+                  </button>
                 ))}
               </div>
 
               <div className="w-px bg-border shrink-0" />
 
               <div className="flex gap-1.5 shrink-0">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   onClick={() => setSortBy("commonCourses")}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                     sortBy === "commonCourses"
@@ -542,10 +512,8 @@ const SquadFormation = () => {
                   }`}
                 >
                   Most Courses
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                   onClick={() => setSortBy("name")}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                     sortBy === "name"
@@ -554,57 +522,42 @@ const SquadFormation = () => {
                   }`}
                 >
                   Name A-Z
-                </motion.button>
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <main className="container mx-auto px-4 py-6">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-4 flex items-center justify-between"
-        >
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Found <span className="font-semibold text-foreground">{filteredStudents.length}</span>{" "}
             {filteredStudents.length === 1 ? "student" : "students"}
           </p>
           {selectedUsers.length > 0 && (
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-              <Badge variant="default" className="px-3 py-1">
-                {selectedUsers.length} selected
-              </Badge>
-            </motion.div>
+            <Badge variant="default" className="px-3 py-1">
+              {selectedUsers.length} selected
+            </Badge>
           )}
-        </motion.div>
+        </div>
 
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
-          <AnimatePresence mode="popLayout">
-            {filteredStudents.map((student, index) => (
-              <motion.div
-                key={student.zid}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ delay: index * 0.05, duration: 0.3 }}
-              >
-                <UserCard
-                  student={student}
-                  isSelected={selectedUsers.includes(student.zid)}
-                  onToggleSelect={() => toggleUserSelection(student.zid)}
-                  courseColors={courseColors}
-                  commonCoursesIntersection={commonCoursesIntersection}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+          {filteredStudents.map((student) => (
+            <UserCard
+              key={student.zid}
+              student={student}
+              isSelected={selectedUsers.includes(student.zid)}
+              onToggleSelect={() => toggleUserSelection(student.zid)}
+              courseColors={courseColors}
+              commonCoursesIntersection={commonCoursesIntersection}
+              selectedCourses={filterCourse}
+            />
+          ))}
+        </div>
 
         {filteredStudents.length === 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
+          <div className="text-center py-16">
             <Users className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">No students found</h3>
             <p className="text-sm text-muted-foreground mb-4">Try adjusting your filters or search query</p>
@@ -613,7 +566,7 @@ const SquadFormation = () => {
                 Clear All Filters
               </Button>
             )}
-          </motion.div>
+          </div>
         )}
       </main>
 
