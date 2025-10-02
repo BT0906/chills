@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getUserCourses } from "@/app/actions/discovery"
+// import { getUserCourses } from "@/app/actions/discovery"
 import { getPendingInvitations } from "@/app/actions/squad"
 import Link from "next/link"
 import { useUser } from "@/hooks/use-user"
 import { useProfile } from "@/hooks/use-profile"
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser();
   const { profile } = useProfile(user?.id)
 
@@ -24,34 +24,34 @@ export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        if (!user) {
-          router.push("/login")
-          return
-        }
+  // useEffect(() => {
+  //   async function loadData() {
+  //     try {
+  //       if (!user) {
+  //         router.push("/login")
+  //         return
+  //       }
 
-        // Get courses
-        const result = await getUserCourses(user.id)
-        if (result.success && result.data) {
-          setCourses(result.data)
-        }
+  //       // Get courses
+  //       const result = await getUserCourses(user.id)
+  //       if (result.success && result.data) {
+  //         setCourses(result.data)
+  //       }
 
-        // Get invitation count
-        const invitationsResult = await getPendingInvitations(user.id)
-        if (invitationsResult.success && invitationsResult.data) {
-          setInvitationCount(invitationsResult.data.length)
-        }
-      } catch (error) {
-        console.error("[v0] Error loading dashboard:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  //       // Get invitation count
+  //       const invitationsResult = await getPendingInvitations(user.id)
+  //       if (invitationsResult.success && invitationsResult.data) {
+  //         setInvitationCount(invitationsResult.data.length)
+  //       }
+  //     } catch (error) {
+  //       console.error("[v0] Error loading dashboard:", error)
+  //     } finally {
+  //       setIsLoading(false)
+  //     }
+  //   }
 
-    loadData()
-  }, [router, supabase, user])
+  //   loadData()
+  // }, [router, supabase, user])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
