@@ -162,7 +162,14 @@ export type Database = {
           {
             foreignKeyName: "member_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
+            referencedRelation: "enrolment_grouped_by_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profile"
             referencedColumns: ["id"]
           },
@@ -200,6 +207,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "message_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "enrolment_grouped_by_user"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "message_sender_id_fkey"
             columns: ["sender_id"]
@@ -317,37 +331,30 @@ export type Database = {
       }
     }
     Views: {
-      enrolment_with_profile: {
+      enrolment_grouped_by_user: {
         Row: {
           age: number | null
           bio: string | null
-          class: Database["public"]["Enums"]["class_type"] | null
-          course: string | null
+          courses: Json | null
+          created_at: string | null
           degree: string | null
-          end_time: string | null
           first_name: string | null
           gender: string | null
-          id: number | null
+          ics_link: string | null
+          id: string | null
           last_name: string | null
           profile_url: string | null
-          room_id: string | null
-          section: string | null
-          start_time: string | null
           user_id: string | null
           zid: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "enrolment_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "room"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
+      accept_invite: {
+        Args: { p_squad_id: number }
+        Returns: undefined
+      }
       create_squad: {
         Args: {
           p_course: string
@@ -357,6 +364,10 @@ export type Database = {
           p_user_ids: string[]
         }
         Returns: number
+      }
+      decline_invite: {
+        Args: { p_squad_id: number }
+        Returns: undefined
       }
       get_common_courses: {
         Args: { user_ids: string[] }
@@ -386,6 +397,24 @@ export type Database = {
           last_name: string
           status: Database["public"]["Enums"]["member_type"]
           user_id: string
+        }[]
+      }
+      get_users_sharing_courses: {
+        Args: { p_user_id: string }
+        Returns: {
+          age: number | null
+          bio: string | null
+          courses: Json | null
+          created_at: string | null
+          degree: string | null
+          first_name: string | null
+          gender: string | null
+          ics_link: string | null
+          id: string | null
+          last_name: string | null
+          profile_url: string | null
+          user_id: string | null
+          zid: string | null
         }[]
       }
     }

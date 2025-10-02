@@ -13,7 +13,7 @@ import { useUser } from "@/hooks/use-user"
 import { useProfile } from "@/hooks/use-profile"
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser();
   const { profile } = useProfile(user?.id)
 
