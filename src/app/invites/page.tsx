@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { findInvites, type Squad } from "@/app/actions/find-squad-invites";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export default function PendingInvites() {
   const [squads, setSquads] = useState<Squad[]>([]);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  const router = useRouter();
 
   // Fetch pending invites for logged-in user
   useEffect(() => {
@@ -52,11 +54,13 @@ export default function PendingInvites() {
   const handleAccept = async (squadId: number) => {
     console.log("Accepted invite for squad", squadId);
     await supabase.rpc("accept_invite", { p_squad_id: squadId });
+    router.push(`/${squadId}`); // navigate to squad page
   };
 
   const handleDecline = async (squadId: number) => {
     console.log("Declined invite for squad", squadId);
     await supabase.rpc("decline_invite", { p_squad_id: squadId });
+    router.push(`/dashboard`); // navigate to dashboard
   };
 
   if (loading) return <div className="p-6 text-center">Loading invites...</div>;
