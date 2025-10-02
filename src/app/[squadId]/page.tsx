@@ -8,6 +8,7 @@ import { useUser } from "@/hooks/use-user";
 import { storeMessages } from "@/lib/store-messages";
 import { formatUserName } from "@/lib/utils";
 
+
 export default function ChatPage() {
   const { user } = useUser();
   const { profile } = useProfile(user?.id);

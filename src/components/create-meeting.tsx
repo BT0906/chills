@@ -6,6 +6,7 @@ import { UserContext } from "@/contexts/user-context";
 import { createClient } from "@/lib/supabase/client"; // make sure this is set up
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
+import { useSquad } from "@/contexts/squad-context"; 
 
 import {
   Dialog,
@@ -21,10 +22,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 
-export function CreateMeetingDialog() {
+export function CreateMeetingDialog({ onCreated }: { onCreated?: () => void }) {
   const [open, setOpen] = useState(false);
   const params = useParams();
-  const squadId = Number(params.id);
+  const { squad } = useSquad();
+  const squadId = Number(params.squadId);
+  console.log(params.id)
+  console.log(squadId);
   const { user, loading } = useContext(UserContext);
   const supabase = createClient();
   const router = useRouter();
@@ -66,7 +70,7 @@ export function CreateMeetingDialog() {
     if (error) {
       alert("Error creating meeting: " + error.message);
     } else {
-      router.refresh(); // reload meetings list
+      onCreated?.();
       setOpen(false); 
     }
   }
