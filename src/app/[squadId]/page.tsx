@@ -14,26 +14,12 @@ export default function ChatPage() {
   const { squad } = useSquad();
   const { messages } = useMessagesQuery(squad?.id);
 
-  if (!user || !profile) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="text-4xl mb-4">🔒</div>
-          <p className="text-lg font-medium">Authentication Required</p>
-          <p className="text-sm text-muted-foreground">
-            Please log in to access the chat.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!squad) {
+  if (!user || !profile || !squad) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading squad...</p>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -54,6 +40,7 @@ export default function ChatPage() {
       username={formatUserName(profile.first_name, profile.last_name)}
       messages={messages || []}
       onMessage={handleMessage}
+      isMember={true} // Always true at this point since layout guards it
     />
   );
 }

@@ -98,12 +98,17 @@ export function useRealtimeChat({
   }, [squadId, username, profileId, supabase, profileUrl]);
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, isMember: boolean = true) => {
       if (!channel || !isConnected) {
         console.log("Cannot send message - not connected:", {
           channel: !!channel,
           isConnected,
         });
+        return;
+      }
+
+      if (!isMember) {
+        console.log("Cannot send message - not a squad member");
         return;
       }
 

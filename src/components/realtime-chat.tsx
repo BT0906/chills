@@ -20,6 +20,7 @@ interface RealtimeChatProps {
   profileUrl?: string;
   onMessage?: (messages: ChatMessage[]) => void;
   messages?: ChatMessage[];
+  isMember: boolean;
 }
 
 export const RealtimeChat = ({
@@ -32,6 +33,7 @@ export const RealtimeChat = ({
   profileUrl,
   onMessage,
   messages: initialMessages = [],
+  isMember,
 }: RealtimeChatProps) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const storedMessageIds = useRef(new Set<string>());
@@ -102,15 +104,15 @@ export const RealtimeChat = ({
   const handleSendMessage = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!newMessage.trim() || !isConnected) return;
+      if (!newMessage.trim() || !isConnected || !isMember) return;
 
-      await sendMessage(newMessage);
+      await sendMessage(newMessage, isMember);
       setNewMessage("");
 
       // Scroll to bottom after sending
       setTimeout(scrollToBottom, 100);
     },
-    [newMessage, isConnected, sendMessage, scrollToBottom]
+    [newMessage, isConnected, isMember, sendMessage, scrollToBottom]
   );
 
   return (
@@ -173,28 +175,37 @@ export const RealtimeChat = ({
 
       {/* Message Input - Sticky Bottom */}
       <div className="border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <form onSubmit={handleSendMessage} className="flex gap-2 p-4">
-          <Input
-            className={cn(
-              "rounded-full bg-muted/50 border-0 text-sm transition-all duration-300 focus-visible:ring-1",
-              isConnected && newMessage.trim() ? "flex-1" : "w-full"
+        {isMember ? (
+          <form onSubmit={handleSendMessage} className="flex gap-2 p-4">
+            <Input
+              className={cn(
+                "rounded-full bg-muted/50 border-0 text-sm transition-all duration-300 focus-visible:ring-1",
+                isConnected && newMessage.trim() ? "flex-1" : "w-full"
+              )}
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder={isConnected ? "Type a message..." : "Connecting..."}
+              disabled={!isConnected}
+            />
+            {isConnected && newMessage.trim() && (
+              <Button
+                className="aspect-square rounded-full bg-primary hover:bg-primary/90 animate-in fade-in slide-in-from-right-4 duration-300"
+                type="submit"
+                size="icon"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
             )}
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={isConnected ? "Type a message..." : "Connecting..."}
-            disabled={!isConnected}
-          />
-          {isConnected && newMessage.trim() && (
-            <Button
-              className="aspect-square rounded-full bg-primary hover:bg-primary/90 animate-in fade-in slide-in-from-right-4 duration-300"
-              type="submit"
-              size="icon"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          )}
-        </form>
+          </form>
+        ) : (
+          <div className="flex items-center justify-center p-4">
+            <div className="text-center text-sm text-muted-foreground">
+              <p className="font-medium">You are not a member of this squad</p>
+              <p className="text-xs">Contact an admin to join this squad</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
