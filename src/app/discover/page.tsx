@@ -10,6 +10,7 @@ import UserCard from "@/components/squad/UserCard"
 import SelectedUsersBar from "@/components/squad/SelectedUsersBar"
 import { motion, AnimatePresence } from "framer-motion"
 import { findClassmates, getCurrentUser } from "@/app/actions/discovery"
+import { generateCourseColor } from "@/lib/utils" // Import color generation function
 
 interface Profile {
   zid: string
@@ -31,11 +32,19 @@ interface Enrolment {
   room_id: string
 }
 
+interface CourseWithCommonFlag {
+  course: string
+  isCommon: boolean
+  enrolments: Enrolment[]
+}
+
 interface Student extends Profile {
   enrolments: Enrolment[]
   commonCourses: string[]
+  allCourses: CourseWithCommonFlag[]
   sameTutorial: boolean
   timeOverlap: boolean
+  sameDayAtUni: boolean
 }
 
 interface CurrentUser {
@@ -51,21 +60,6 @@ interface CurrentUser {
   }>
 }
 
-const courseColors: Record<string, { bg: string; text: string; border: string }> = {
-  COMP1511: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-400", border: "border-blue-500/30" },
-  COMP1521: { bg: "bg-purple-500/15", text: "text-purple-700 dark:text-purple-400", border: "border-purple-500/30" },
-  MATH1081: {
-    bg: "bg-emerald-500/15",
-    text: "text-emerald-700 dark:text-emerald-400",
-    border: "border-emerald-500/30",
-  },
-  COMP4920: { bg: "bg-indigo-500/15", text: "text-indigo-700 dark:text-indigo-400", border: "border-indigo-500/30" },
-  COMP6991: { bg: "bg-pink-500/15", text: "text-pink-700 dark:text-pink-400", border: "border-pink-500/30" },
-  COMM1999: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-400", border: "border-amber-500/30" },
-  FINS2615: { bg: "bg-teal-500/15", text: "text-teal-700 dark:text-teal-400", border: "border-teal-500/30" },
-  FINS2618: { bg: "bg-rose-500/15", text: "text-rose-700 dark:text-rose-400", border: "border-rose-500/30" },
-}
-
 const SquadFormation = () => {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [students, setStudents] = useState<Student[]>([])
@@ -77,7 +71,18 @@ const SquadFormation = () => {
   const [filterCourse, setFilterCourse] = useState<string[]>([])
   const [showSameTutorial, setShowSameTutorial] = useState(false)
   const [showTimeOverlap, setShowTimeOverlap] = useState(false)
+  const [showSameDay, setShowSameDay] = useState(false)
+  const [filterGender, setFilterGender] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<"commonCourses" | "name">("commonCourses")
+
+  const courseColors = useMemo(() => {
+    if (!currentUser) return {}
+    const colors: Record<string, { bg: string; text: string; border: string }> = {}
+    currentUser.courses.forEach((course) => {
+      colors[course] = generateCourseColor(course)
+    })
+    return colors
+  }, [currentUser])
 
   useEffect(() => {
     async function loadData() {
@@ -96,6 +101,8 @@ const SquadFormation = () => {
 
       // Extract unique courses from enrolments
       const userCourses = Array.from(new Set(enrolments.map((e: any) => e.course)))
+
+      const userClassDays = new Set(enrolments.map((e: any) => new Date(e.start_time).toISOString().split("T")[0]))
 
       const user: CurrentUser = {
         zid: profile.zid,
@@ -121,21 +128,30 @@ const SquadFormation = () => {
 
       // Transform classmates data to match Student interface
       const transformedStudents: Student[] = classmatesResult.data.map((classmate: any) => {
-        // Extract all courses
-        const courses = classmate.courses.map((c: any) => c.course)
-        const commonCourses = courses.filter((course: string) => userCourses.includes(course))
-
-        // Flatten enrolments
-        const allEnrolments = classmate.courses.flatMap((c: any) =>
-          c.enrolments.map((e: any) => ({
+        const allCoursesMap = new Map<string, Enrolment[]>()
+        classmate.courses.forEach((c: any) => {
+          const courseEnrolments = c.enrolments.map((e: any) => ({
             course: c.course,
             class_type: e.class as "lec" | "tut" | "lab",
             section: e.section || "",
             start_time: e.start_time,
             end_time: e.end_time,
             room_id: e.room_id,
-          })),
-        )
+          }))
+          allCoursesMap.set(c.course, courseEnrolments)
+        })
+
+        const courses = Array.from(allCoursesMap.keys())
+        const commonCourses = courses.filter((course: string) => userCourses.includes(course))
+
+        const allCourses: CourseWithCommonFlag[] = courses.map((course) => ({
+          course,
+          isCommon: userCourses.includes(course),
+          enrolments: allCoursesMap.get(course) || [],
+        }))
+
+        // Flatten enrolments
+        const allEnrolments = Array.from(allCoursesMap.values()).flat()
 
         // Check if same tutorial
         const sameTutorial = user.enrolments.some((userEnrol) =>
@@ -163,6 +179,9 @@ const SquadFormation = () => {
           }),
         )
 
+        const classmateClassDays = new Set(allEnrolments.map((e) => new Date(e.start_time).toISOString().split("T")[0]))
+        const sameDayAtUni = Array.from(userClassDays).some((day) => classmateClassDays.has(day))
+
         return {
           zid: classmate.zid,
           first_name: classmate.first_name,
@@ -175,8 +194,10 @@ const SquadFormation = () => {
           bio: classmate.bio,
           enrolments: allEnrolments,
           commonCourses,
+          allCourses,
           sameTutorial,
           timeOverlap,
+          sameDayAtUni,
         }
       })
 
@@ -234,6 +255,10 @@ const SquadFormation = () => {
     setFilterCourse((prev) => (prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]))
   }
 
+  const toggleGenderFilter = (gender: string) => {
+    setFilterGender((prev) => (prev.includes(gender) ? prev.filter((g) => g !== gender) : [...prev, gender]))
+  }
+
   const deselectAll = () => {
     setSelectedUsers([])
     setFilterCourse([])
@@ -243,10 +268,17 @@ const SquadFormation = () => {
     setFilterCourse([])
     setShowSameTutorial(false)
     setShowTimeOverlap(false)
+    setShowSameDay(false)
+    setFilterGender([])
     setSearchQuery("")
   }
 
-  const activeFilterCount = filterCourse.length + (showSameTutorial ? 1 : 0) + (showTimeOverlap ? 1 : 0)
+  const activeFilterCount =
+    filterCourse.length +
+    (showSameTutorial ? 1 : 0) +
+    (showTimeOverlap ? 1 : 0) +
+    (showSameDay ? 1 : 0) +
+    filterGender.length
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
@@ -265,6 +297,10 @@ const SquadFormation = () => {
     if (showSameTutorial && !student.sameTutorial) return false
 
     if (showTimeOverlap && !student.timeOverlap) return false
+
+    if (showSameDay && !student.sameDayAtUni) return false
+
+    if (filterGender.length > 0 && !filterGender.includes(student.gender)) return false
 
     return true
   })
@@ -437,6 +473,18 @@ const SquadFormation = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSameDay(!showSameDay)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
+                    showSameDay
+                      ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 shadow-md"
+                      : "bg-background text-muted-foreground border-border hover:border-foreground/20"
+                  }`}
+                >
+                  Same Day
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowSameTutorial(!showSameTutorial)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
                     showSameTutorial
@@ -458,6 +506,26 @@ const SquadFormation = () => {
                 >
                   Time Match
                 </motion.button>
+              </div>
+
+              <div className="w-px bg-border shrink-0" />
+
+              <div className="flex gap-1.5 shrink-0">
+                {["Male", "Female", "Other"].map((gender) => (
+                  <motion.button
+                    key={gender}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleGenderFilter(gender)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
+                      filterGender.includes(gender)
+                        ? "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 shadow-md"
+                        : "bg-background text-muted-foreground border-border hover:border-foreground/20"
+                    }`}
+                  >
+                    {gender}
+                  </motion.button>
+                ))}
               </div>
 
               <div className="w-px bg-border shrink-0" />
