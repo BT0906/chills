@@ -1,28 +1,54 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Search, Users, X, AlertCircle } from "lucide-react"
+import { Search, Users, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import UserCard from "@/components/squad/UserCard"
 import SelectedUsersBar from "@/components/squad/SelectedUsersBar"
 import { motion, AnimatePresence } from "framer-motion"
-import { findClassmates, type Person } from "@/app/actions/discovery"
-import { createClient } from "@/lib/supabase/client"
+import { findClassmates, getCurrentUser } from "@/app/actions/discovery"
 
-type Student = Person
+interface Profile {
+  zid: string
+  first_name: string
+  last_name: string
+  profile_url: string
+  degree: string
+  gender: string
+  age: number
+  bio: string
+}
 
-const currentUser = {
-  zid: "z5555555",
-  first_name: "Alice",
-  courses: ["COMP1511", "MATH1081", "COMP1521"],
-  enrolments: [
-    { course: "COMP1511", class_type: "tut" as const, section: "W16B", start_time: "16:00", end_time: "18:00" },
-    { course: "MATH1081", class_type: "tut" as const, section: "T14A", start_time: "14:00", end_time: "16:00" },
-  ],
+interface Enrolment {
+  course: string
+  class_type: "lec" | "tut" | "lab"
+  section: string
+  start_time: string
+  end_time: string
+  room_id: string
+}
+
+interface Student extends Profile {
+  enrolments: Enrolment[]
+  commonCourses: string[]
+  sameTutorial: boolean
+  timeOverlap: boolean
+}
+
+interface CurrentUser {
+  zid: string
+  first_name: string
+  courses: string[]
+  enrolments: Array<{
+    course: string
+    class: string
+    section: string | null
+    start_time: string
+    end_time: string
+  }>
 }
 
 const courseColors: Record<string, { bg: string; text: string; border: string }> = {
@@ -33,13 +59,18 @@ const courseColors: Record<string, { bg: string; text: string; border: string }>
     text: "text-emerald-700 dark:text-emerald-400",
     border: "border-emerald-500/30",
   },
+  COMP4920: { bg: "bg-indigo-500/15", text: "text-indigo-700 dark:text-indigo-400", border: "border-indigo-500/30" },
+  COMP6991: { bg: "bg-pink-500/15", text: "text-pink-700 dark:text-pink-400", border: "border-pink-500/30" },
+  COMM1999: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-400", border: "border-amber-500/30" },
+  FINS2615: { bg: "bg-teal-500/15", text: "text-teal-700 dark:text-teal-400", border: "border-teal-500/30" },
+  FINS2618: { bg: "bg-rose-500/15", text: "text-rose-700 dark:text-rose-400", border: "border-rose-500/30" },
 }
 
 const SquadFormation = () => {
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [students, setStudents] = useState<Student[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -49,45 +80,111 @@ const SquadFormation = () => {
   const [sortBy, setSortBy] = useState<"commonCourses" | "name">("commonCourses")
 
   useEffect(() => {
-    async function loadClassmates() {
-      try {
-        setIsLoading(true)
-        setError(null)
+    async function loadData() {
+      setIsLoading(true)
+      setError(null)
 
-        // Get current user from Supabase auth
-        const supabase = createClient()
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser()
-
-        if (authError || !user) {
-          setError("Please log in to find classmates")
-          setIsLoading(false)
-          return
-        }
-
-        setCurrentUserId(user.id)
-
-        // Fetch classmates using server action
-        const result = await findClassmates(user.id)
-
-        if (!result.success) {
-          setError(result.error)
-          setIsLoading(false)
-          return
-        }
-
-        setStudents(result.data)
+      // Get current user
+      const userResult = await getCurrentUser()
+      if (!userResult.success) {
+        setError(userResult.error)
         setIsLoading(false)
-      } catch (err) {
-        console.error("[v0] Error loading classmates:", err)
-        setError("Failed to load classmates. Please try again.")
-        setIsLoading(false)
+        return
       }
+
+      const { profile, enrolments } = userResult.data
+
+      // Extract unique courses from enrolments
+      const userCourses = Array.from(new Set(enrolments.map((e: any) => e.course)))
+
+      const user: CurrentUser = {
+        zid: profile.zid,
+        first_name: profile.first_name,
+        courses: userCourses,
+        enrolments: enrolments.map((e: any) => ({
+          course: e.course,
+          class: e.class,
+          section: e.section,
+          start_time: e.start_time,
+          end_time: e.end_time,
+        })),
+      }
+      setCurrentUser(user)
+
+      // Get classmates
+      const classmatesResult = await findClassmates(userResult.data.userId)
+      if (!classmatesResult.success) {
+        setError(classmatesResult.error)
+        setIsLoading(false)
+        return
+      }
+
+      // Transform classmates data to match Student interface
+      const transformedStudents: Student[] = classmatesResult.data.map((classmate: any) => {
+        // Extract all courses
+        const courses = classmate.courses.map((c: any) => c.course)
+        const commonCourses = courses.filter((course: string) => userCourses.includes(course))
+
+        // Flatten enrolments
+        const allEnrolments = classmate.courses.flatMap((c: any) =>
+          c.enrolments.map((e: any) => ({
+            course: c.course,
+            class_type: e.class as "lec" | "tut" | "lab",
+            section: e.section || "",
+            start_time: e.start_time,
+            end_time: e.end_time,
+            room_id: e.room_id,
+          })),
+        )
+
+        // Check if same tutorial
+        const sameTutorial = user.enrolments.some((userEnrol) =>
+          allEnrolments.some(
+            (classEnrol) =>
+              userEnrol.course === classEnrol.course &&
+              userEnrol.class === "tut" &&
+              classEnrol.class_type === "tut" &&
+              userEnrol.section === classEnrol.section,
+          ),
+        )
+
+        // Check if time overlap
+        const timeOverlap = user.enrolments.some((userEnrol) =>
+          allEnrolments.some((classEnrol) => {
+            if (userEnrol.course !== classEnrol.course) return false
+
+            const userStart = new Date(userEnrol.start_time).getTime()
+            const userEnd = new Date(userEnrol.end_time).getTime()
+            const classStart = new Date(classEnrol.start_time).getTime()
+            const classEnd = new Date(classEnrol.end_time).getTime()
+
+            // Check if times overlap
+            return userStart < classEnd && classStart < userEnd
+          }),
+        )
+
+        return {
+          zid: classmate.zid,
+          first_name: classmate.first_name,
+          last_name: classmate.last_name,
+          profile_url:
+            classmate.profile_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${classmate.first_name}`,
+          degree: classmate.degree,
+          gender: classmate.gender,
+          age: classmate.age || 0,
+          bio: classmate.bio,
+          enrolments: allEnrolments,
+          commonCourses,
+          sameTutorial,
+          timeOverlap,
+        }
+      })
+
+      setStudents(transformedStudents)
+      setIsLoading(false)
     }
 
-    loadClassmates()
+    loadData()
   }, [])
 
   const commonCoursesIntersection = useMemo(() => {
@@ -103,6 +200,14 @@ const SquadFormation = () => {
 
     return Array.from(intersection)
   }, [selectedUsers, students])
+
+  useEffect(() => {
+    if (selectedUsers.length === 0) {
+      setFilterCourse([])
+    } else {
+      setFilterCourse(commonCoursesIntersection)
+    }
+  }, [selectedUsers, commonCoursesIntersection])
 
   const squadCourse = useMemo(() => {
     if (filterCourse.length === 1) return filterCourse[0]
@@ -124,7 +229,7 @@ const SquadFormation = () => {
 
   const toggleCourseFilter = (course: string) => {
     if (selectedUsers.length > 0 && !commonCoursesIntersection.includes(course)) {
-      return
+      return // Don't allow toggling disabled filters
     }
     setFilterCourse((prev) => (prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]))
   }
@@ -148,7 +253,7 @@ const SquadFormation = () => {
       student.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.zid.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (student.degree?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+      student.degree.toLowerCase().includes(searchQuery.toLowerCase())
 
     if (!matchesSearch) return false
 
@@ -172,27 +277,37 @@ const SquadFormation = () => {
 
   const handleFormSquad = () => {
     const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
-    console.log("Forming squad with:", selectedStudents)
+    console.log("[v0] Forming squad with:", selectedStudents)
   }
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="text-center">
-          <Users className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4 animate-pulse" />
-          <p className="text-lg font-semibold text-foreground">Finding your classmates...</p>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center"
+          >
+            <Users className="h-6 w-6 text-white" />
+          </motion.div>
+          <p className="text-sm text-muted-foreground">Loading classmates...</p>
         </div>
       </div>
     )
   }
 
-  if (error) {
+  if (error || !currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-destructive/20 flex items-center justify-center">
+            <X className="h-6 w-6 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Failed to load data</h3>
+          <p className="text-sm text-muted-foreground mb-4">{error || "Unable to fetch user data"}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
       </div>
     )
   }
@@ -401,7 +516,7 @@ const SquadFormation = () => {
           <AnimatePresence mode="popLayout">
             {filteredStudents.map((student, index) => (
               <motion.div
-                key={student.zid + index}
+                key={student.zid}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
