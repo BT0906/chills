@@ -1,25 +1,23 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Check, MessageSquare } from "lucide-react"
-import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
-import { Confetti, type ConfettiRef } from "@/components/ui/confetti"
-import { useParams } from "next/navigation";
 import { getSquadMembers } from "@/app/actions/get-squad-members";
-import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
+import { createClient } from "@/lib/supabase/client";
+import { Check, MessageSquare } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export default function SquadPage() {
   const router = useRouter();
-  const confettiRef = useRef<ConfettiRef>(null)
+  const confettiRef = useRef<ConfettiRef>(null);
   const { id } = useParams();
   const supabase = createClient();
 
-  const [squad, setSquad] = useState<any>(null)
-  const [members, setMembers] = useState<any[]>([])
+  const [squad, setSquad] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchSquad() {
@@ -27,18 +25,18 @@ export default function SquadPage() {
         .from("squad")
         .select("id, name, course, description")
         .eq("id", id)
-        .single()
+        .single();
 
       if (squadError) {
-        console.error("Error fetching squad:", squadError)
-        return
+        console.error("Error fetching squad:", squadError);
+        return;
       }
 
-      setSquad(squadData)
+      setSquad(squadData);
 
       const result = await getSquadMembers(squadData.id);
       if (result.success) {
-        console.log(JSON.stringify(result.members, null, 2))
+        console.log(JSON.stringify(result.members, null, 2));
         setMembers(result.members ?? []); // <-- fallback to empty array
       } else {
         console.error("Error fetching members:", result.error);
@@ -46,16 +44,16 @@ export default function SquadPage() {
       }
     }
 
-    if (id) fetchSquad()
-  }, [id])
+    if (id) fetchSquad();
+  }, [id]);
 
   useEffect(() => {
     if (squad) {
       setTimeout(() => {
-        confettiRef.current?.fire({})
-      }, 500)
+        confettiRef.current?.fire({});
+      }, 500);
     }
-  }, [squad])
+  }, [squad]);
 
   const placeholders = [
     "What's the weighting of this assignment?",
@@ -63,10 +61,10 @@ export default function SquadPage() {
     "Find me a room with whiteboards",
     "Create a group chat with all my members",
     "Book me a room that fits six people",
-  ]
+  ];
 
   if (!squad) {
-    return <div className="flex justify-center p-10">Loading squad...</div>
+    return <div className="flex justify-center p-10">Loading squad...</div>;
   }
 
   return (
@@ -87,7 +85,7 @@ export default function SquadPage() {
               ref={confettiRef}
               className="absolute top-0 left-0 z-0 size-full"
               onMouseEnter={() => {
-                confettiRef.current?.fire({})
+                confettiRef.current?.fire({});
               }}
             />
 
@@ -95,8 +93,8 @@ export default function SquadPage() {
               placeholders={placeholders}
               onChange={(e) => console.log(e.target.value)}
               onSubmit={(e) => {
-                e.preventDefault()
-                console.log("submitted")
+                e.preventDefault();
+                console.log("submitted");
               }}
             />
           </div>
@@ -106,63 +104,76 @@ export default function SquadPage() {
             <div className="flex items-center gap-2 mb-6">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
               <Badge variant="secondary">{squad.course}</Badge>
-              <span className="text-sm text-muted-foreground">{squad.name || "Study Squad"}</span>
+              <span className="text-sm text-muted-foreground">
+                {squad.name || "Study Squad"}
+              </span>
               <br></br>
-              <span className="text-sm text-muted-foreground">{squad.description || ""}</span>
+              <span className="text-sm text-muted-foreground">
+                {squad.description || ""}
+              </span>
             </div>
 
             {/* Members */}
-            <h3 className="text-sm font-semibold text-foreground mb-3">Members</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3">
+              Members
+            </h3>
             <div className="space-y-3">
-                        {members.map((m) => (
-              <div key={m.user_id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={m.avatar_url || "/placeholder.svg"}
-                    alt={m.name || "Member"}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="font-medium text-foreground">{m.name}</div>
-                    <div className="text-sm text-muted-foreground">Member</div>
-                  </div>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className={
-                    m.status === "active"
-                      ? "bg-green-500/10 text-green-600 border-green-500/20"
-                      : "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
-                  }
+              {members.map((m) => (
+                <div
+                  key={m.user_id}
+                  className="flex items-center justify-between"
                 >
-                  {m.status === "active" ? "Active" : "Pending"}
-                </Badge>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={m.avatar_url || "/placeholder.svg"}
+                      alt={m.name || "Member"}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <div className="font-medium text-foreground">
+                        {m.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Member
+                      </div>
+                    </div>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className={
+                      m.status === "active"
+                        ? "bg-green-500/10 text-green-600 border-green-500/20"
+                        : "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+                    }
+                  >
+                    {m.status === "active" ? "Active" : "Pending"}
+                  </Badge>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Actions */}
           <div className="space-y-3">
-          <Button
-            className="w-full h-12 text-base"
-            size="lg"
-            onClick={() => router.push(`/squad/${squad.id}/chat`)}
-          >
-            <MessageSquare className="mr-2 h-5 w-5" />
-            Join Squad Chat
-          </Button>
+            <Button
+              className="w-full h-12 text-base"
+              size="lg"
+              onClick={() => router.push(`/${squad.id}`)}
+            >
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Join Squad Chat
+            </Button>
 
-          <Button
-            variant="outline"
-            className="w-full h-12 text-base bg-transparent"
-            onClick={() => router.push("/")}
-          >
-            Back to Dashboard
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              className="w-full h-12 text-base bg-transparent"
+              onClick={() => router.push("/dashboard")}
+            >
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

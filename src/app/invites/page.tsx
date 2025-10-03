@@ -89,10 +89,10 @@ export default function PendingInvites() {
   if (loading) return <div className="p-6 text-center">Loading invites...</div>;
   if (!squads.length)
     return (
-      <div className="container mx-auto max-w-3xl p-6 mt-10 bg-green-200">
+      <div className="container mx-auto max-w-3xl p-6 mt-10">
         <h1 className="text-3xl font-bold mb-6 text-foreground">Your Pending Chillers
         </h1>
-        <div className="mb-6 bg-red-100">
+        <div className="mb-6">
           Unfortunately, you have no pending chills!
         </div>
 
