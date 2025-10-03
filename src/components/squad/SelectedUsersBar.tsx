@@ -1,26 +1,39 @@
-"use client"
+"use client";
 
-import { X, Users, Sparkles, AlertTriangle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { motion, AnimatePresence } from "framer-motion"
+import { SquadFormDialog } from "@/components/squad/squad-form-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertTriangle, Sparkles, Users, X } from "lucide-react";
+import { useState } from "react";
 
 interface Student {
-  zid: string
-  first_name: string
-  last_name: string
-  profile_url: string
+  zid: string;
+  first_name: string;
+  last_name: string;
+  profile_url: string;
 }
 
 interface SelectedUsersBarProps {
-  selectedUsers: string[]
-  students: Student[]
-  onRemove: (zid: string) => void
-  onFormSquad: () => void
-  squadCourse: string | null
-  commonCoursesIntersection: string[]
+  selectedUsers: string[];
+  students: Student[];
+  onRemove: (zid: string) => void;
+  onFormSquad: (
+    name: string,
+    description: string,
+    course: string,
+    currentUserId: string
+  ) => Promise<void>;
+  squadCourse: string | null;
+  commonCoursesIntersection: string[];
+  currentUserId: string;
 }
 
 const SelectedUsersBar = ({
@@ -30,10 +43,16 @@ const SelectedUsersBar = ({
   onFormSquad,
   squadCourse,
   commonCoursesIntersection,
+  currentUserId,
 }: SelectedUsersBarProps) => {
-  const selectedStudents = students.filter((s) => selectedUsers.includes(s.zid))
-  const canFormSquad = squadCourse !== null
-  const showWarning = selectedUsers.length >= 2 && commonCoursesIntersection.length === 0
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const selectedStudents = students.filter((s) =>
+    selectedUsers.includes(s.zid)
+  );
+  const canFormSquad =
+    squadCourse !== null || commonCoursesIntersection.length > 0;
+  const showWarning =
+    selectedUsers.length >= 2 && commonCoursesIntersection.length === 0;
 
   return (
     <motion.div
@@ -49,11 +68,17 @@ const SelectedUsersBar = ({
             <div className="flex items-center gap-1.5 mb-1">
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 0.5, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
+                transition={{
+                  duration: 0.5,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatDelay: 3,
+                }}
               >
                 <Users className="h-3.5 w-3.5 text-primary" />
               </motion.div>
-              <h3 className="text-xs font-semibold text-foreground">Selected</h3>
+              <h3 className="text-xs font-semibold text-foreground">
+                Selected
+              </h3>
               <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
                 {selectedUsers.length}
               </span>
@@ -85,7 +110,10 @@ const SelectedUsersBar = ({
                     className="flex items-center gap-1.5 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full pl-0.5 pr-2 py-0.5 border border-primary/20 shadow-sm"
                   >
                     <Avatar className="h-5 w-5 md:h-6 md:w-6 ring-2 ring-background">
-                      <AvatarImage src={student.profile_url || "/placeholder.svg"} alt={student.first_name} />
+                      <AvatarImage
+                        src={student.profile_url || "/placeholder.svg"}
+                        alt={student.first_name}
+                      />
                       <AvatarFallback className="text-[10px] bg-gradient-to-br from-primary to-accent text-primary-foreground">
                         {student.first_name[0]}
                         {student.last_name[0]}
@@ -117,7 +145,7 @@ const SelectedUsersBar = ({
                   className="w-full md:w-auto"
                 >
                   <Button
-                    onClick={onFormSquad}
+                    onClick={() => setIsDialogOpen(true)}
                     disabled={!canFormSquad}
                     size="sm"
                     className={`w-full md:w-auto bg-gradient-to-r from-primary via-primary to-accent hover:opacity-90 transition-opacity text-primary-foreground shadow-lg px-4 md:px-6 relative overflow-hidden group h-7 md:h-8 ${
@@ -128,11 +156,17 @@ const SelectedUsersBar = ({
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
                         animate={{ x: ["-100%", "100%"] }}
-                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatDelay: 1 }}
+                        transition={{
+                          duration: 2,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatDelay: 1,
+                        }}
                       />
                     )}
                     <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1.5 relative z-10" />
-                    <span className="relative z-10 text-xs md:text-sm">Form Squad</span>
+                    <span className="relative z-10 text-xs md:text-sm">
+                      Form Squad
+                    </span>
                   </Button>
                 </motion.div>
               </TooltipTrigger>
@@ -142,8 +176,8 @@ const SelectedUsersBar = ({
                     {selectedUsers.length < 2
                       ? "Select at least 2 students to form a squad"
                       : commonCoursesIntersection.length === 0
-                        ? "Selected students must have at least one course in common"
-                        : "Select a single course filter to form a squad"}
+                      ? "Selected students must have at least one course in common"
+                      : "Select a single course filter to form a squad"}
                   </p>
                 </TooltipContent>
               )}
@@ -151,8 +185,18 @@ const SelectedUsersBar = ({
           </TooltipProvider>
         </div>
       </div>
-    </motion.div>
-  )
-}
 
-export default SelectedUsersBar
+      <SquadFormDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={onFormSquad}
+        selectedStudents={selectedStudents}
+        squadCourse={squadCourse}
+        commonCoursesIntersection={commonCoursesIntersection}
+        currentUserId={currentUserId}
+      />
+    </motion.div>
+  );
+};
+
+export default SelectedUsersBar;

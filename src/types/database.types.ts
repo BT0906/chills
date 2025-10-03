@@ -358,7 +358,8 @@ export type Database = {
       create_squad: {
         Args: {
           p_course: string
-          p_creator_id: string
+          p_creator_auth_id: string
+          p_creator_profile_id: string
           p_description: string
           p_name: string
           p_user_ids: string[]
@@ -392,11 +393,27 @@ export type Database = {
       get_squad_members: {
         Args: { p_squad_id: number }
         Returns: {
+          avatar_url: string
           first_name: string
           joined_at: string
           last_name: string
           status: Database["public"]["Enums"]["member_type"]
           user_id: string
+        }[]
+      }
+      get_squad_with_members: {
+        Args: { squad_id_input: number }
+        Returns: {
+          member_avatar_url: string
+          member_first_name: string
+          member_id: string
+          member_last_name: string
+          member_status: Database["public"]["Enums"]["member_type"]
+          member_zid: string
+          squad_course: string
+          squad_description: string
+          squad_id: number
+          squad_name: string
         }[]
       }
       get_users_sharing_courses: {
