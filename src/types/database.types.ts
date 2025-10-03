@@ -358,7 +358,8 @@ export type Database = {
       create_squad: {
         Args: {
           p_course: string
-          p_creator_id: string
+          p_creator_auth_id: string
+          p_creator_profile_id: string
           p_description: string
           p_name: string
           p_user_ids: string[]

@@ -23,11 +23,12 @@ export interface Member {
 }
 
 export interface CreateSquadInput {
-  name: string
-  description: string
-  course: string
-  creator_id: string
-  user_ids: string[]
+  name: string;
+  description: string;
+  course: string;
+  creator_id: string;          // auth UUID
+  creator_profile_id: string;  // profile UUID
+  user_ids: string[];          // invited profile IDs
 }
 
 export interface User {

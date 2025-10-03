@@ -18,8 +18,10 @@ import { AnimatePresence } from "framer-motion";
 import { Search, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createSquad } from "../actions/create-squad";
+import { useRouter } from "next/navigation";
 
 interface Profile {
+  id: string; // Profile ID
   zid: string;
   first_name: string;
   last_name: string;
@@ -28,7 +30,7 @@ interface Profile {
   gender: string;
   age: number;
   bio: string;
-  user_id: string; // Auth UUID needed for squad creation
+  user_id: string; // Auth UUID
 }
 
 interface Enrolment {
@@ -64,10 +66,10 @@ interface Student extends Profile {
 }
 
 interface CurrentUser {
-  userId: string;
+  auth_id: string;      // auth.users.id
+  profile_id: string;   // profile.id
   zid: string;
   first_name: string;
-  user_id: string; // Auth UUID for squad creation
   courses: string[];
   enrolments: Array<{
     course: string;
@@ -132,10 +134,10 @@ const SquadFormation = () => {
       );
 
       const user: CurrentUser = {
-        userId: userResult.data.userId,
+        auth_id: userResult.data.userId,   // comes from Supabase auth
+        profile_id: profile.id,            // comes from profiles table
         zid: profile.zid,
         first_name: profile.first_name,
-        user_id: userResult.data.userId, // Auth UUID
         courses: userCourses,
         enrolments: enrolments.map((e: any) => ({
           course: e.course,
@@ -221,6 +223,7 @@ const SquadFormation = () => {
           );
 
           return {
+            id: classmate.id, // Profile ID
             zid: classmate.zid,
             first_name: classmate.first_name,
             last_name: classmate.last_name,
@@ -231,7 +234,7 @@ const SquadFormation = () => {
             gender: classmate.gender,
             age: classmate.age || 0,
             bio: classmate.bio,
-            user_id: classmate.user_id, // Auth UUID needed for squad creation
+            user_id: classmate.user_id, // Auth UUID
             enrolments: allEnrolments,
             commonCourses,
             allCourses,
@@ -276,6 +279,12 @@ const SquadFormation = () => {
   }, [selectedUsers, commonCoursesIntersection]);
 
   const squadCourse = useMemo(() => {
+    console.log("[DEBUG] filterCourse:", filterCourse);
+    console.log(
+      "[DEBUG] commonCoursesIntersection:",
+      commonCoursesIntersection
+    );
+
     if (filterCourse.length === 1) return filterCourse[0];
     if (commonCoursesIntersection.length === 1)
       return commonCoursesIntersection[0];
@@ -365,9 +374,19 @@ const SquadFormation = () => {
     return true;
   });
 
-  const handleFormSquad = async () => {
-    if (!currentUser || !squadCourse) {
+  const router = useRouter();
+
+  const handleFormSquad = async (
+    name: string,
+    description: string,
+    selectedCourse: string,
+    currentUserId: string
+  ) => {
+
+    if (!currentUser || !selectedCourse) {
       console.error("❌ Missing required data for squad creation");
+      console.error("❌ currentUser:", !!currentUser);
+      console.error("❌ selectedCourse:", !!selectedCourse);
       return;
     }
 
@@ -376,13 +395,24 @@ const SquadFormation = () => {
       selectedUsers.includes(s.zid)
     );
 
+    // Filter out students with null IDs
+    const validSelectedStudents = selectedStudents.filter((s) => s.id);
+
+    if (validSelectedStudents.length === 0) {
+      alert(
+        "Selected students don't have valid IDs. Please refresh the page and try again."
+      );
+      return;
+    }
+
     // Map to squad input
     const squadInput: CreateSquadInput = {
-      name: `${currentUser.first_name}'s ${squadCourse} Squad`, // Better naming
-      description: `Study squad for ${squadCourse}`,
-      course: squadCourse,
-      creator_id: currentUser.user_id, // Use auth UUID for creator_id
-      user_ids: selectedStudents.map((s) => s.user_id), // 👈 use user_id (auth UUID) instead of zid
+      name,
+      description,
+      course: selectedCourse,
+      creator_id: currentUser.auth_id,         // ✅ correct auth.users.id
+      creator_profile_id: currentUser.profile_id, // ✅ correct profile.id
+      user_ids: validSelectedStudents.map((s) => s.id), // invited profile IDs
     };
 
     console.log("[v0] Squad payload:", squadInput);
@@ -392,13 +422,11 @@ const SquadFormation = () => {
 
     if (result.success) {
       console.log("✅ Squad created with ID:", result.squad_id);
+
       // Clear selections
       setSelectedUsers([]);
-      // Navigate to the new squad (you can add navigation here later)
-      // window.location.href = `/squads/${result.squad_id}`;
-      alert(
-        `Squad "${name}" created successfully! Squad ID: ${result.squad_id}`
-      );
+  
+      router.push(`/squad/${result.squad_id}`);
     } else {
       console.error("❌ Error creating squad:", result.error);
       alert(`Failed to create squad: ${result.error}`);
@@ -447,7 +475,7 @@ const SquadFormation = () => {
               </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-                  SquadUp
+                  chills.
                 </h1>
                 <p className="text-xs md:text-sm text-muted-foreground leading-tight">
                   {squadCourse
@@ -695,10 +723,21 @@ const SquadFormation = () => {
             onRemove={(zid) =>
               setSelectedUsers((prev) => prev.filter((id) => id !== zid))
             }
-            onFormSquad={handleFormSquad}
+            onFormSquad={(name, description, selectedCourse, currentUserId) => {
+              console.log(
+                "[DEBUG] Button clicked! Calling handleFormSquad with:",
+                { name, description, selectedCourse, currentUserId }
+              );
+              return handleFormSquad(
+                name,
+                description,
+                selectedCourse,
+                currentUserId
+              );
+            }}
             squadCourse={squadCourse}
             commonCoursesIntersection={commonCoursesIntersection}
-            currentUserId={currentUser.userId}
+            currentUserId={currentUser.profile_id}
           />
         )}
       </AnimatePresence>
