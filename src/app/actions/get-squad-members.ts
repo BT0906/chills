@@ -18,12 +18,13 @@ export async function getSquadMembers(squadId: number) {
   return {
     success: true,
     members: (data ?? []).map((m, index) => ({
-      id: index,                // or m.id if returned from SQL
-      squad_id: squadId,        
+      id: index,
+      squad_id: squadId,
       user_id: m.user_id,
       status: m.status,
       joined_at: m.joined_at,
-      name: `${m.first_name} ${m.last_name}`, // optional extra field
+      name: `${m.first_name ?? ''} ${m.last_name ?? ''}`, // fallback if still missing
+      avatar_url: m.avatar_url ?? '/placeholder.svg'
     })) as Member[],
   };
 }
