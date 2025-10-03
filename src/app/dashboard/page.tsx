@@ -1,55 +1,60 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { getUserCourses } from "@/app/actions/discovery"
-import Link from "next/link"
-import { useUser } from "@/hooks/use-user"
-import { useProfile } from "@/hooks/use-profile"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useProfile } from "@/hooks/use-profile";
+import { useUser } from "@/hooks/use-user";
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
-  const { profile } = useProfile(user?.id)
+  const { profile } = useProfile(user?.id);
 
-  const [courses, setCourses] = useState<any[]>([])
+  const [courses, setCourses] = useState<any[]>([]);
 
-  const [invitationCount, setInvitationCount] = useState(0)
-  const router = useRouter()
-  const supabase = createClient()
+  const [invitationCount, setInvitationCount] = useState(0);
+  const router = useRouter();
+  const supabase = createClient();
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        if (!user) {
-          router.push("/login")
-          return
-        }
+  // useEffect(() => {
+  //   async function loadData() {
+  //     try {
+  //       if (!user) {
+  //         router.push("/login")
+  //         return
+  //       }
 
-        // Get courses
-        const result = await getUserCourses(user.id)
-        if (result.success && result.data) {
-          setCourses(result.data)
-        }
-      } catch (error) {
-        console.error("[v0] Error loading dashboard:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  //       // Get courses
+  //       const result = await getUserCourses(user.id)
+  //       if (result.success && result.data) {
+  //         setCourses(result.data)
+  //       }
+  //     } catch (error) {
+  //       console.error("[v0] Error loading dashboard:", error)
+  //     } finally {
+  //       setIsLoading(false)
+  //     }
+  //   }
 
-    loadData()
-  }, [router, supabase, user])
+  //   loadData()
+  // }, [router, supabase, user])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
-  }
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   if (isLoading) {
     return (
@@ -63,7 +68,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -115,7 +120,9 @@ export default function DashboardPage() {
               <CardDescription>Per week</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{courses.reduce((sum, c) => sum + c.classCount, 0)}</div>
+              <div className="text-3xl font-bold">
+                {courses.reduce((sum, c) => sum + c.classCount, 0)}
+              </div>
             </CardContent>
           </Card>
 
@@ -133,18 +140,27 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Your Courses</CardTitle>
-            <CardDescription>Classes you are enrolled in this term</CardDescription>
+            <CardDescription>
+              Classes you are enrolled in this term
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {courses.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No courses found. Please update your timetable.</p>
+              <p className="text-muted-foreground text-center py-8">
+                No courses found. Please update your timetable.
+              </p>
             ) : (
               <div className="space-y-4">
                 {courses.map((course) => (
-                  <div key={course.course} className="border rounded-lg p-4 space-y-2">
+                  <div
+                    key={course.course}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-lg">{course.course}</h3>
-                      <Badge variant="secondary">{course.classCount} classes</Badge>
+                      <Badge variant="secondary">
+                        {course.classCount} classes
+                      </Badge>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {course.classes.map((cls: any, idx: number) => (
@@ -163,7 +179,9 @@ export default function DashboardPage() {
 
         <Card className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
           <CardHeader>
-            <CardTitle className="text-white">Ready to Find Your Squad?</CardTitle>
+            <CardTitle className="text-white">
+              Ready to Find Your Squad?
+            </CardTitle>
             <CardDescription className="text-blue-100">
               Discover students in your courses and form study groups
             </CardDescription>
@@ -176,5 +194,5 @@ export default function DashboardPage() {
         </Card>
       </main>
     </div>
-  )
+  );
 }

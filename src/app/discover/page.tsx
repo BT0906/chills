@@ -40,6 +40,14 @@ interface Enrolment {
   room_id: string;
 }
 
+interface ApiEnrolment {
+  course: string;
+  class: string;
+  section: string | null;
+  start_time: string;
+  end_time: string;
+}
+
 interface CourseWithCommonFlag {
   course: string;
   isCommon: boolean;
@@ -56,6 +64,7 @@ interface Student extends Profile {
 }
 
 interface CurrentUser {
+  userId: string;
   zid: string;
   first_name: string;
   user_id: string; // Auth UUID for squad creation
@@ -123,6 +132,7 @@ const SquadFormation = () => {
       );
 
       const user: CurrentUser = {
+        userId: userResult.data.userId,
         zid: profile.zid,
         first_name: profile.first_name,
         user_id: userResult.data.userId, // Auth UUID
@@ -376,19 +386,23 @@ const SquadFormation = () => {
     };
 
     console.log("[v0] Squad payload:", squadInput);
-    console.log(
-      "[v0] Selected students:",
-      selectedStudents.map((s) => ({ zid: s.zid, user_id: s.user_id }))
-    );
 
     // Call your SQL RPC
     const result = await createSquad(squadInput);
 
     if (result.success) {
       console.log("✅ Squad created with ID:", result.squad_id);
-      // route.push(`/squad/${result.squad_id}`)
+      // Clear selections
+      setSelectedUsers([]);
+      // Navigate to the new squad (you can add navigation here later)
+      // window.location.href = `/squads/${result.squad_id}`;
+      alert(
+        `Squad "${name}" created successfully! Squad ID: ${result.squad_id}`
+      );
     } else {
       console.error("❌ Error creating squad:", result.error);
+      alert(`Failed to create squad: ${result.error}`);
+      throw new Error(result.error);
     }
   };
 
@@ -684,6 +698,7 @@ const SquadFormation = () => {
             onFormSquad={handleFormSquad}
             squadCourse={squadCourse}
             commonCoursesIntersection={commonCoursesIntersection}
+            currentUserId={currentUser.userId}
           />
         )}
       </AnimatePresence>
