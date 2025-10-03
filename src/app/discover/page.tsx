@@ -1,7 +1,6 @@
 "use client";
 
 import { findClassmates, getCurrentUser } from "@/app/actions/discovery";
-import FormSquadDialog from "@/components/squad/Dialog";
 import SelectedUsersBar from "@/components/squad/SelectedUsersBar";
 import UserCard from "@/components/squad/UserCard";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +28,7 @@ interface Profile {
   gender: string;
   age: number;
   bio: string;
+  user_id: string; // Auth UUID needed for squad creation
 }
 
 interface Enrolment {
@@ -58,6 +58,7 @@ interface Student extends Profile {
 interface CurrentUser {
   zid: string;
   first_name: string;
+  user_id: string; // Auth UUID for squad creation
   courses: string[];
   enrolments: Array<{
     course: string;
@@ -124,6 +125,7 @@ const SquadFormation = () => {
       const user: CurrentUser = {
         zid: profile.zid,
         first_name: profile.first_name,
+        user_id: userResult.data.userId, // Auth UUID
         courses: userCourses,
         enrolments: enrolments.map((e: any) => ({
           course: e.course,
@@ -219,6 +221,7 @@ const SquadFormation = () => {
             gender: classmate.gender,
             age: classmate.age || 0,
             bio: classmate.bio,
+            user_id: classmate.user_id, // Auth UUID needed for squad creation
             enrolments: allEnrolments,
             commonCourses,
             allCourses,
@@ -352,31 +355,35 @@ const SquadFormation = () => {
     return true;
   });
 
-  const handleFormSquad = async (
-    name: string,
-    description: string,
-    course: string,
-    currentUserId: string
-  ) => {
+  const handleFormSquad = async () => {
+    if (!currentUser || !squadCourse) {
+      console.error("❌ Missing required data for squad creation");
+      return;
+    }
+
     // Filter to only selected students
     const selectedStudents = students.filter((s) =>
       selectedUsers.includes(s.zid)
     );
-  
+
     // Map to squad input
     const squadInput: CreateSquadInput = {
-      name,
-      description,
-      course,
-      creator_id: currentUserId,
-      user_ids: selectedStudents.map((s) => s.zid), // 👈 just extract the zid
+      name: `${currentUser.first_name}'s ${squadCourse} Squad`, // Better naming
+      description: `Study squad for ${squadCourse}`,
+      course: squadCourse,
+      creator_id: currentUser.user_id, // Use auth UUID for creator_id
+      user_ids: selectedStudents.map((s) => s.user_id), // 👈 use user_id (auth UUID) instead of zid
     };
-  
+
     console.log("[v0] Squad payload:", squadInput);
-  
+    console.log(
+      "[v0] Selected students:",
+      selectedStudents.map((s) => ({ zid: s.zid, user_id: s.user_id }))
+    );
+
     // Call your SQL RPC
     const result = await createSquad(squadInput);
-  
+
     if (result.success) {
       console.log("✅ Squad created with ID:", result.squad_id);
       // route.push(`/squad/${result.squad_id}`)
