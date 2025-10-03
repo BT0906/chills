@@ -10,8 +10,10 @@ import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-van
 import { Confetti, type ConfettiRef } from "@/components/ui/confetti"
 import { useParams } from "next/navigation";
 import { getSquadMembers } from "@/app/actions/get-squad-members";
+import { useRouter } from "next/navigation";
 
 export default function SquadPage() {
+  const router = useRouter();
   const confettiRef = useRef<ConfettiRef>(null)
   const { id } = useParams();
   const supabase = createClient();
@@ -106,7 +108,7 @@ export default function SquadPage() {
               <Badge variant="secondary">{squad.course}</Badge>
               <span className="text-sm text-muted-foreground">{squad.name || "Study Squad"}</span>
               <br></br>
-              <span className="text-sm text-muted-foreground">{squad.description || "hello"}</span>
+              <span className="text-sm text-muted-foreground">{squad.description || ""}</span>
             </div>
 
             {/* Members */}
@@ -142,14 +144,23 @@ export default function SquadPage() {
 
           {/* Actions */}
           <div className="space-y-3">
-            <Button className="w-full h-12 text-base" size="lg">
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Join Squad Chat
-            </Button>
-            <Button variant="outline" className="w-full h-12 text-base bg-transparent" asChild>
-              <Link href="/dashboard">Back to Dashboard</Link>
-            </Button>
-          </div>
+          <Button
+            className="w-full h-12 text-base"
+            size="lg"
+            onClick={() => router.push(`/squad/${squad.id}/chat`)}
+          >
+            <MessageSquare className="mr-2 h-5 w-5" />
+            Join Squad Chat
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full h-12 text-base bg-transparent"
+            onClick={() => router.push("/")}
+          >
+            Back to Dashboard
+          </Button>
+        </div>
         </div>
       </main>
     </div>
