@@ -42,6 +42,11 @@ export function LoginForm({
         email,
         password,
       });
+<<<<<<< HEAD
+
+      if (signInError) throw signInError;
+=======
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
 
       if (signInError || !user) throw signInError;
       console.log(JSON.stringify(user));
@@ -49,7 +54,12 @@ export function LoginForm({
       const { data: profiles, error: profileError } = await supabase
         .from("profile")
         .select("*")
+<<<<<<< HEAD
+        .eq("id", user?.id); // Do not use `.single()` here
+
+=======
         .eq("user_id", user.id); // Do not use `.single()` here
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
       if (profileError) {
         console.error("Profile query error:", profileError);
         throw profileError;

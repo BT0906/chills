@@ -11,9 +11,14 @@ export function useProfile(userId: string | null | undefined) {
       const { data, error } = await supabase
         .from("profile")
         .select("*")
+<<<<<<< HEAD
+        .eq("id", userId)
+        .single();
+=======
         .eq("user_id", userId)
         .single();
       console.log("Fetched profile data:", data, error);
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
       if (error) throw error;
       return data;
     }

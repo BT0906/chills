@@ -1,5 +1,14 @@
 "use client";
 
+<<<<<<< HEAD
+import { createClient } from "@/lib/supabase/client";
+import { useCallback, useEffect, useState } from "react";
+
+interface UseRealtimeChatProps {
+  userId: string;
+  username: string;
+  squadId: number;
+=======
 import { storeMessages } from "@/lib/store-messages";
 import { createClient } from "@/lib/supabase/client";
 import { getSquadChannelName } from "@/lib/utils";
@@ -10,6 +19,7 @@ interface UseRealtimeChatProps {
   username: string;
   squadId: number;
   profileUrl?: string;
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
 }
 
 export interface ChatMessage {
@@ -18,12 +28,26 @@ export interface ChatMessage {
   user: {
     id: string;
     name: string;
+<<<<<<< HEAD
+=======
     image: string;
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
   };
   squadId: number;
   createdAt: string;
 }
 
+<<<<<<< HEAD
+const EVENT_MESSAGE_TYPE = "message";
+
+export function useRealtimeChat({
+  userId,
+  username,
+  squadId,
+}: UseRealtimeChatProps) {
+  const supabase = createClient();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+=======
 export type RealtimeUser = {
   id: string;
   profileId: string;
@@ -44,12 +68,20 @@ export function useRealtimeChat({
   const [onlineUsers, setOnlineUsers] = useState<Record<string, RealtimeUser>>(
     {}
   );
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
   const [channel, setChannel] = useState<ReturnType<
     typeof supabase.channel
   > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+<<<<<<< HEAD
+    const newChannel = supabase.channel(`chat-squad-${squadId}`);
+
+    newChannel
+      .on("broadcast", { event: EVENT_MESSAGE_TYPE }, (payload) => {
+        setMessages((current) => [...current, payload.payload as ChatMessage]);
+=======
     const newChannel = supabase.channel(getSquadChannelName(squadId));
 
     newChannel
@@ -77,22 +109,35 @@ export function useRealtimeChat({
           ])
         );
         setOnlineUsers(users);
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           setIsConnected(true);
+<<<<<<< HEAD
+=======
 
           await newChannel.track({
             profileId: profileId,
             name: username,
             image: "",
           });
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
         }
       });
 
     setChannel(newChannel);
 
     return () => {
+<<<<<<< HEAD
+      supabase.removeChannel(newChannel);
+    };
+  }, [squadId, username, supabase]);
+
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!channel || !isConnected) return;
+=======
       newChannel.unsubscribe();
     };
   }, [squadId, username, profileId, supabase, profileUrl]);
@@ -106,19 +151,40 @@ export function useRealtimeChat({
         });
         return;
       }
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
 
       const message: ChatMessage = {
         id: crypto.randomUUID(),
         content,
         user: {
+<<<<<<< HEAD
+          id: userId,
+          name: username,
+=======
           id: profileId,
           name: username,
           image: profileUrl || "",
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
         },
         squadId: squadId,
         createdAt: new Date().toISOString(),
       };
 
+<<<<<<< HEAD
+      // Update local state immediately for the sender
+      setMessages((current) => [...current, message]);
+
+      await channel.send({
+        type: "broadcast",
+        event: EVENT_MESSAGE_TYPE,
+        payload: message,
+      });
+    },
+    [channel, isConnected, username, userId, squadId]
+  );
+
+  return { messages, sendMessage, isConnected };
+=======
       try {
         // Store our own message immediately in the database
         await storeMessages([message]);
@@ -145,4 +211,5 @@ export function useRealtimeChat({
     isConnected,
     onlineUsers: Object.values(onlineUsers),
   };
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
 }
