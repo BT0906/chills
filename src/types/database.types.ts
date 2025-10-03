@@ -47,9 +47,15 @@ export type Database = {
         Row: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
+<<<<<<< HEAD
           end_time: string | null
           id: number
           room: string
+=======
+          end_time: string
+          id: number
+          room_id: string
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           section: string | null
           start_time: string
           user_id: string
@@ -57,9 +63,15 @@ export type Database = {
         Insert: {
           class: Database["public"]["Enums"]["class_type"]
           course: string
+<<<<<<< HEAD
           end_time?: string | null
           id: number
           room: string
+=======
+          end_time: string
+          id?: number
+          room_id: string
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           section?: string | null
           start_time: string
           user_id: string
@@ -67,17 +79,28 @@ export type Database = {
         Update: {
           class?: Database["public"]["Enums"]["class_type"]
           course?: string
+<<<<<<< HEAD
           end_time?: string | null
           id?: number
           room?: string
+=======
+          end_time?: string
+          id?: number
+          room_id?: string
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           section?: string | null
           start_time?: string
           user_id?: string
         }
         Relationships: [
           {
+<<<<<<< HEAD
             foreignKeyName: "enrolment_room_fkey"
             columns: ["room"]
+=======
+            foreignKeyName: "enrolment_room_id_fkey"
+            columns: ["room_id"]
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
             isOneToOne: false
             referencedRelation: "room"
             referencedColumns: ["id"]
@@ -136,33 +159,70 @@ export type Database = {
         Row: {
           created_at: string
           squad_id: number
+<<<<<<< HEAD
+=======
+          status: Database["public"]["Enums"]["member_type"]
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           user_id: string
         }
         Insert: {
           created_at?: string
           squad_id: number
+<<<<<<< HEAD
+=======
+          status?: Database["public"]["Enums"]["member_type"]
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           user_id: string
         }
         Update: {
           created_at?: string
           squad_id?: number
+<<<<<<< HEAD
+=======
+          status?: Database["public"]["Enums"]["member_type"]
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "member_squad_id_fkey"
             columns: ["squad_id"]
+<<<<<<< HEAD
             isOneToOne: true
             referencedRelation: "squad"
             referencedColumns: ["id"]
           },
+=======
+            isOneToOne: false
+            referencedRelation: "squad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "enrolment_grouped_by_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
         ]
       }
       message: {
         Row: {
           body: string
           created_at: string
+<<<<<<< HEAD
           id: number
+=======
+          id: string
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           is_deleted: boolean
           is_edited: boolean
           sender_id: string
@@ -172,7 +232,11 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
+<<<<<<< HEAD
           id?: number
+=======
+          id?: string
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           is_deleted?: boolean
           is_edited?: boolean
           sender_id: string
@@ -182,7 +246,11 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+<<<<<<< HEAD
           id?: number
+=======
+          id?: string
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           is_deleted?: boolean
           is_edited?: boolean
           sender_id?: string
@@ -191,6 +259,23 @@ export type Database = {
         }
         Relationships: [
           {
+<<<<<<< HEAD
+=======
+            foreignKeyName: "message_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "enrolment_grouped_by_user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+          {
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
             foreignKeyName: "message_squad_id_fkey"
             columns: ["squad_id"]
             isOneToOne: false
@@ -211,6 +296,10 @@ export type Database = {
           id: string
           last_name: string
           profile_url: string | null
+<<<<<<< HEAD
+=======
+          user_id: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           zid: string
         }
         Insert: {
@@ -221,9 +310,16 @@ export type Database = {
           first_name: string
           gender?: string | null
           ics_link: string
+<<<<<<< HEAD
           id: string
           last_name: string
           profile_url?: string | null
+=======
+          id?: string
+          last_name: string
+          profile_url?: string | null
+          user_id?: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           zid: string
         }
         Update: {
@@ -237,6 +333,10 @@ export type Database = {
           id?: string
           last_name?: string
           profile_url?: string | null
+<<<<<<< HEAD
+=======
+          user_id?: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           zid?: string
         }
         Relationships: []
@@ -245,14 +345,26 @@ export type Database = {
         Row: {
           abbr: string
           id: string
+<<<<<<< HEAD
+=======
+          name: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
         }
         Insert: {
           abbr: string
           id: string
+<<<<<<< HEAD
+=======
+          name?: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
         }
         Update: {
           abbr?: string
           id?: string
+<<<<<<< HEAD
+=======
+          name?: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
         }
         Relationships: []
       }
@@ -263,9 +375,15 @@ export type Database = {
           creator_id: string
           description: string | null
           id: number
+<<<<<<< HEAD
           name: string
           profile_url: string | null
           status: Database["public"]["Enums"]["squad_type"]
+=======
+          is_deleted: boolean
+          name: string
+          profile_url: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           visibility: Database["public"]["Enums"]["squad_visibility"]
         }
         Insert: {
@@ -274,9 +392,15 @@ export type Database = {
           creator_id: string
           description?: string | null
           id?: number
+<<<<<<< HEAD
           name: string
           profile_url?: string | null
           status?: Database["public"]["Enums"]["squad_type"]
+=======
+          is_deleted?: boolean
+          name: string
+          profile_url?: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Update: {
@@ -285,15 +409,22 @@ export type Database = {
           creator_id?: string
           description?: string | null
           id?: number
+<<<<<<< HEAD
           name?: string
           profile_url?: string | null
           status?: Database["public"]["Enums"]["squad_type"]
+=======
+          is_deleted?: boolean
+          name?: string
+          profile_url?: string | null
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
           visibility?: Database["public"]["Enums"]["squad_visibility"]
         }
         Relationships: []
       }
     }
     Views: {
+<<<<<<< HEAD
       [_ in never]: never
     }
     Functions: {
@@ -302,6 +433,115 @@ export type Database = {
     Enums: {
       class_type: "lec" | "tut" | "lab"
       squad_type: "pending" | "active" | "deleted"
+=======
+      enrolment_grouped_by_user: {
+        Row: {
+          age: number | null
+          bio: string | null
+          courses: Json | null
+          created_at: string | null
+          degree: string | null
+          first_name: string | null
+          gender: string | null
+          ics_link: string | null
+          id: string | null
+          last_name: string | null
+          profile_url: string | null
+          user_id: string | null
+          zid: string | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      accept_invite: {
+        Args: { p_squad_id: number }
+        Returns: undefined
+      }
+      create_squad: {
+        Args: {
+          p_course: string
+          p_creator_auth_id: string
+          p_creator_profile_id: string
+          p_description: string
+          p_name: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
+      decline_invite: {
+        Args: { p_squad_id: number }
+        Returns: undefined
+      }
+      get_common_courses: {
+        Args: { user_ids: string[] }
+        Returns: {
+          course: string
+        }[]
+      }
+      get_pending_squads_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          course: string
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: number
+          is_deleted: boolean
+          name: string
+          profile_url: string | null
+          visibility: Database["public"]["Enums"]["squad_visibility"]
+        }[]
+      }
+      get_squad_members: {
+        Args: { p_squad_id: number }
+        Returns: {
+          avatar_url: string
+          first_name: string
+          joined_at: string
+          last_name: string
+          status: Database["public"]["Enums"]["member_type"]
+          user_id: string
+        }[]
+      }
+      get_squad_with_members: {
+        Args: { squad_id_input: number }
+        Returns: {
+          member_avatar_url: string
+          member_first_name: string
+          member_id: string
+          member_last_name: string
+          member_status: Database["public"]["Enums"]["member_type"]
+          member_zid: string
+          squad_course: string
+          squad_description: string
+          squad_id: number
+          squad_name: string
+        }[]
+      }
+      get_users_sharing_courses: {
+        Args: { p_user_id: string }
+        Returns: {
+          age: number | null
+          bio: string | null
+          courses: Json | null
+          created_at: string | null
+          degree: string | null
+          first_name: string | null
+          gender: string | null
+          ics_link: string | null
+          id: string | null
+          last_name: string | null
+          profile_url: string | null
+          user_id: string | null
+          zid: string | null
+        }[]
+      }
+    }
+    Enums: {
+      class_type: "lec" | "tut" | "lab" | "other"
+      member_type: "pending" | "active" | "left"
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
       squad_visibility: "open" | "closed"
     }
     CompositeTypes: {
@@ -430,8 +670,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+<<<<<<< HEAD
       class_type: ["lec", "tut", "lab"],
       squad_type: ["pending", "active", "deleted"],
+=======
+      class_type: ["lec", "tut", "lab", "other"],
+      member_type: ["pending", "active", "left"],
+>>>>>>> 08a69fffba0169a80e6e6684d840f8e333bfd953
       squad_visibility: ["open", "closed"],
     },
   },
