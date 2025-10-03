@@ -106,7 +106,7 @@ export default function SquadPage() {
               <Badge variant="secondary">{squad.course}</Badge>
               <span className="text-sm text-muted-foreground">{squad.name || "Study Squad"}</span>
               <br></br>
-              <span className="text-sm text-muted-foreground">{squad.description || "hello"}</span>
+              <span className="text-sm text-muted-foreground">{squad.description || ""}</span>
             </div>
 
             {/* Members */}
@@ -146,10 +146,13 @@ export default function SquadPage() {
               <MessageSquare className="mr-2 h-5 w-5" />
               Join Squad Chat
             </Button>
-            <Button variant="outline" className="w-full h-12 text-base bg-transparent" asChild>
-              <Link href="/dashboard">Back to Dashboard</Link>
-            </Button>
-          </div>
+
+            <Link href="/" passHref>
+              <Button variant="outline" className="w-full h-12 text-base bg-transparent">
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>  
         </div>
       </main>
     </div>
