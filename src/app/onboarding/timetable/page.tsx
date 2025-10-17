@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from "@/types/database.types";
 import { Calendar } from "lucide-react";
+import { Info } from 'lucide-react';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -98,22 +99,6 @@ export default function TimetableSetupPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">
-                C
-              </span>
-            </div>
-            <span className="text-xl font-semibold text-foreground">
-              Chills
-            </span>
-          </div>
-        </div>
-      </header>
-
       {/* Progress Bar */}
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -157,13 +142,21 @@ export default function TimetableSetupPage() {
                 <Input
                   id="ical-link"
                   type="url"
-                  placeholder="https://timetable.university.edu/ical/..."
+                  placeholder="webcal://my.unsw.edu.au/cal/pttd/..."
                   value={icalLink}
                   onChange={handleIcalLinkChange}
                   className="h-12"
                 />
                 <p className="text-sm text-muted-foreground">
-                  Find your iCal link in your university timetable settings
+                  <div className="flex flex-row items-center gap-1">
+                    <Info width={15} />How do I find my iCal link?
+                  </div>
+                  <ol className="mt-2 list-decimal list-inside space-y-1">
+                  <li>Log into your myUNSW account</li>
+                  <li>Click on “Class Timetable”</li>
+                  <li>Click on “Personal iCal Link”</li>
+                  <li>Copy the calendar link</li>
+                </ol>
                 </p>
               </div>
 

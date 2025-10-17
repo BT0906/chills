@@ -102,21 +102,6 @@ export default function TimetablePreviewPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">
-                C
-              </span>
-            </div>
-            <span className="text-xl font-semibold text-foreground">
-              Chills
-            </span>
-          </div>
-        </div>
-      </header>
-
       {/* Progress Bar */}
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -143,7 +128,13 @@ export default function TimetablePreviewPage() {
           {/* Loader */}
           {loading && (
             <div className="flex justify-center items-center h-full">
-              <div className="w-16 h-16 border-4 border-t-4 border-primary rounded-full animate-spin"></div>
+              <div className="relative w-20 h-20">
+                {/* Main spinning ring */}
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 border-r-blue-200 animate-spin"></div>
+                
+                {/* Glowing effect */}
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500/30 blur-sm animate-spin"></div>
+              </div>
             </div>
           )}
 
@@ -200,14 +191,6 @@ export default function TimetablePreviewPage() {
               </div>
 
               <div className="flex gap-3 mt-50">
-                {/* <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 h-12 bg-transparent"
-                  asChild
-                >
-                  <Link href="/onboarding/timetable">Back</Link>
-                </Button> */}
                 <Button className="flex-1 h-12" asChild>
                   <Link href="/dashboard">Continue to Dashboard</Link>
                 </Button>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TablesInsert } from "@/types/database.types";
-import { User } from "lucide-react"; // You can choose the icon you prefer
+import { User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -58,23 +58,7 @@ export default function OnboardingStepOne() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">
-                C
-              </span>
-            </div>
-            <span className="text-xl font-semibold text-foreground">
-              Chills
-            </span>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* Progress Bar */}
       <div className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -106,44 +90,45 @@ export default function OnboardingStepOne() {
               Complete Your Profile
             </h1>
             <p className="text-muted-foreground text-lg">
-              Please fill in your basic details to get started.
+              Fill in your details to get chilling!
             </p>
           </div>
 
           <div className="bg-card rounded-2xl p-8 shadow-sm border border-border">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="first-name">First Name</Label>
-                <Input
-                  id="first-name"
-                  type="text"
-                  placeholder="John"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="h-12"
-                  required
-                />
-              </div>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 space-y-2">
+                  <Label htmlFor="first-name">First Name</Label>
+                  <Input
+                    id="first-name"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="h-12"
+                    required
+                  />
+                </div>
 
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="last-name">Last Name</Label>
+                  <Input
+                    id="last-name"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="h-12"
+                    required
+                  />
+                </div>
+            </div>
               <div className="space-y-2">
-                <Label htmlFor="last-name">Last Name</Label>
-                <Input
-                  id="last-name"
-                  type="text"
-                  placeholder="Doe"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="h-12"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="zid">ZID (Student ID)</Label>
+                <Label htmlFor="zid">zID (Student ID)</Label>
                 <Input
                   id="zid"
                   type="text"
-                  placeholder="Z1234567"
+                  placeholder="z1234567"
                   value={zid}
                   onChange={(e) => setZid(e.target.value)}
                   className="h-12"
@@ -165,15 +150,24 @@ export default function OnboardingStepOne() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender (Optional)</Label>
-                <Input
-                  id="gender"
-                  type="text"
-                  placeholder="Male / Female / Other"
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="h-12"
-                />
+                <Label>Gender (Optional)</Label>
+                <div className="flex gap-3">
+                  {['Male', 'Female', 'Other'].map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setGender(option)}
+                      className={`h-12 flex-1 rounded-lg border transition-colors
+                        ${
+                          gender === option
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                        }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2">

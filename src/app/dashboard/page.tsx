@@ -1,5 +1,6 @@
 "use client";
 
+import { WeeklyCalendar } from "@/components/dashboard-calendar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,45 +17,17 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useCourseStats } from "../../hooks/use-course-enrolement"
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
   const { profile } = useProfile(user?.id);
 
-  const [courses, setCourses] = useState<any[]>([]);
-
+  const { courses, totalClasses, loading: courseLoading } = useCourseStats(user?.id);
   const [invitationCount, setInvitationCount] = useState(0);
   const router = useRouter();
   const supabase = createClient();
-
-  // useEffect(() => {
-  //   async function loadData() {
-  //     try {
-  //       if (!user) {
-  //         router.push("/login")
-  //         return
-  //       }
-
-  //       // Get courses
-  //       const result = await getUserCourses(user.id)
-  //       if (result.success && result.data) {
-  //         setCourses(result.data)
-  //       }
-  //     } catch (error) {
-  //       console.error("[v0] Error loading dashboard:", error)
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   }
-
-  //   loadData()
-  // }, [router, supabase, user])
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
 
   if (isLoading) {
     return (
@@ -73,17 +46,15 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">
-      <header className="border-b bg-white/80 backdrop-blur-sm">
+      <header className="border-b backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Squad Formation</h1>
-            <p className="text-sm text-muted-foreground">
-              Welcome back, {profile?.first_name} {profile?.last_name}
-            </p>
+            <h1 className="text-2xl font-bold">Welcome to chills {profile?.first_name} {profile?.last_name}!</h1>
           </div>
+
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href="/invites">My Squads</Link>
+              <Link href="/squads">My Squads</Link>
             </Button>
             {invitationCount > 0 && (
               <Button asChild variant="outline">
@@ -95,41 +66,41 @@ export default function DashboardPage() {
                 </Link>
               </Button>
             )}
-            <Button variant="outline" onClick={handleSignOut}>
-              Sign Out
+            <Button asChild variant="outline">
+              <Link href="/invites">Pending Invites</Link>
             </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Your Courses</CardTitle>
-              <CardDescription>Enrolled this term</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{courses.length}</div>
-            </CardContent>
-          </Card>
+        <div className="flex flex-row grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="flex-1">
+              <CardHeader>
+                <CardTitle className="text-lg">Your Courses</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {courses.length === 0 ? (
+                    <span className="text-muted-foreground text-sm">No courses</span>
+                  ) : (
+                    courses.map((courseGroup) => (
+                      <Badge 
+                        key={courseGroup.course} 
+                        variant="secondary"
+                        className="text-sm"
+                      >
+                        {courseGroup.course}
+                      </Badge>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Total Classes</CardTitle>
-              <CardDescription>Per week</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {courses.reduce((sum, c) => sum + c.classCount, 0)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
+          <Card className="flex-1">
             <CardHeader>
               <CardTitle className="text-lg">Your Degree</CardTitle>
-              <CardDescription>Program</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-lg font-semibold">{profile?.degree}</div>
@@ -137,45 +108,9 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Courses</CardTitle>
-            <CardDescription>
-              Classes you are enrolled in this term
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {courses.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                No courses found. Please update your timetable.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {courses.map((course) => (
-                  <div
-                    key={course.course}
-                    className="border rounded-lg p-4 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-lg">{course.course}</h3>
-                      <Badge variant="secondary">
-                        {course.classCount} classes
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {course.classes.map((cls: any, idx: number) => (
-                        <Badge key={idx} variant="outline">
-                          {cls.class}
-                          {cls.section ? ` ${cls.section}` : ""}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {user && (
+          <WeeklyCalendar userId={user.id} />
+        )}
 
         <Card className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
           <CardHeader>

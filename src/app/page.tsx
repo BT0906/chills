@@ -9,26 +9,6 @@ import { Typewriter } from "@/components/ui/typewriter";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      {/* <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
-            </div>
-            <span className="text-xl font-semibold text-foreground">chills.</span>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Log In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>Get Started</Button>
-            </Link>
-          </nav>
-        </div>
-      </header> */}
-
       <section className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-4xl text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 text-balance">

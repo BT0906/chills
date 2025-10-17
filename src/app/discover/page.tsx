@@ -19,6 +19,7 @@ import { Search, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createSquad } from "../actions/create-squad";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Profile {
   id: string; // Profile ID
@@ -465,224 +466,185 @@ const SquadFormation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <header className="border-b bg-card/95 backdrop-blur-xl sticky top-0 z-40 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg">
-                <Users className="h-5 w-5 md:h-6 md:w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-                  chills.
-                </h1>
-                <p className="text-xs md:text-sm text-muted-foreground leading-tight">
-                  {squadCourse
-                    ? `Forming squad for ${squadCourse}`
-                    : "Find your perfect study squad"}
-                </p>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p className="text-sm font-semibold text-foreground leading-tight">
-                {currentUser.first_name}
-              </p>
-              <p className="text-xs text-muted-foreground leading-tight">
-                {currentUser.zid}
-              </p>
-            </div>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="min-h-screen">
+      <header className="border-bsticky top-0 z-40">
+        <div className="container mx-auto px-6 py-4">
+          {/* Search Bar */}
+          <div className="mb-4">
             <Input
-              placeholder="Search by name, zID, or degree..."
-              className="pl-10 h-10 text-sm"
+              placeholder="Search for someone's name or zID..."
+              className="h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-        </div>
-
-        <div className="border-t bg-muted/30">
-          <div className="container mx-auto px-4 py-2.5">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-xs font-semibold text-foreground shrink-0">
-                Filters:
-              </h3>
-              {activeFilterCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearAllFilters}
-                  className="h-6 text-xs text-muted-foreground hover:text-foreground px-2"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Clear all
-                </Button>
-              )}
-              {selectedUsers.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={deselectAll}
-                  className="h-6 text-xs text-muted-foreground hover:text-foreground px-2"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Deselect all
-                </Button>
-              )}
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+  
+          {/* Filter Pills */}
+          <div className="flex items-center justify-center gap-3 overflow-x-auto pb-2">
+            {/* Clear Filters */}
+            {activeFilterCount > 0 && (
+              <button
+                onClick={clearAllFilters}
+                className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+                Clear
+              </button>
+            )}
+  
+            {/* Course Filters */}
+            <div className="flex gap-2 shrink-0">
               <TooltipProvider>
-                <div className="flex gap-1.5 shrink-0">
-                  {currentUser.courses.map((course) => {
-                    const colors = courseColors[course] || {
-                      bg: "bg-gray-500/15",
-                      text: "text-gray-700",
-                      border: "border-gray-500/30",
-                    };
-                    const isDisabled =
-                      selectedUsers.length > 0 &&
-                      !commonCoursesIntersection.includes(course);
-                    const isActive = filterCourse.includes(course);
-
-                    const button = (
-                      <button
-                        key={course}
-                        onClick={() => toggleCourseFilter(course)}
-                        disabled={isDisabled}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 ${
-                          isDisabled
-                            ? "bg-muted/50 text-muted-foreground/40 border-border/30 cursor-not-allowed opacity-50"
-                            : isActive
-                            ? `${colors.bg} ${colors.text} ${colors.border} shadow-md`
-                            : "bg-background text-muted-foreground border-border hover:border-foreground/20 opacity-60 hover:opacity-100"
-                        }`}
-                      >
-                        {course}
-                      </button>
+                {currentUser.courses.map((course) => {
+                  const isDisabled =
+                    selectedUsers.length > 0 &&
+                    !commonCoursesIntersection.includes(course);
+                  const isActive = filterCourse.includes(course);
+  
+                  const button = (
+                    <button
+                      key={course}
+                      onClick={() => toggleCourseFilter(course)}
+                      disabled={isDisabled}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        isDisabled
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : isActive
+                          ? "bg-blue-500 text-white shadow-sm"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {course}
+                    </button>
+                  );
+  
+                  if (isDisabled) {
+                    return (
+                      <Tooltip key={course}>
+                        <TooltipTrigger asChild>{button}</TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">
+                            No selected students have {course}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     );
-
-                    if (isDisabled) {
-                      return (
-                        <Tooltip key={course}>
-                          <TooltipTrigger asChild>{button}</TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">
-                              No selected students have {course} in common
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    }
-
-                    return button;
-                  })}
-                </div>
+                  }
+  
+                  return button;
+                })}
               </TooltipProvider>
-
-              <div className="w-px bg-border shrink-0" />
-
-              <div className="flex gap-1.5 shrink-0">
+            </div>
+  
+            <div className="w-px h-6 bg-gray-200 shrink-0" />
+  
+            {/* Quick Filters */}
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={() => setShowSameDay(!showSameDay)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  showSameDay
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Same Day
+              </button>
+              <button
+                onClick={() => setShowSameTutorial(!showSameTutorial)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  showSameTutorial
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Same Tutorial
+              </button>
+              <button
+                onClick={() => setShowTimeOverlap(!showTimeOverlap)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  showTimeOverlap
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Time Match
+              </button>
+            </div>
+  
+            <div className="w-px h-6 bg-gray-200 shrink-0" />
+  
+            {/* Gender Filters */}
+            <div className="flex gap-2 shrink-0">
+              {["Male", "Female", "Other"].map((gender) => (
                 <button
-                  onClick={() => setShowSameDay(!showSameDay)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
-                    showSameDay
-                      ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 shadow-md"
-                      : "bg-background text-muted-foreground border-border hover:border-foreground/20"
+                  key={gender}
+                  onClick={() => toggleGenderFilter(gender)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    filterGender.includes(gender)
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Same Day
+                  {gender}
                 </button>
-                <button
-                  onClick={() => setShowSameTutorial(!showSameTutorial)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
-                    showSameTutorial
-                      ? "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 shadow-md"
-                      : "bg-background text-muted-foreground border-border hover:border-foreground/20"
-                  }`}
-                >
-                  Same Tutorial
-                </button>
-                <button
-                  onClick={() => setShowTimeOverlap(!showTimeOverlap)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
-                    showTimeOverlap
-                      ? "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30 shadow-md"
-                      : "bg-background text-muted-foreground border-border hover:border-foreground/20"
-                  }`}
-                >
-                  Time Match
-                </button>
-              </div>
-
-              <div className="w-px bg-border shrink-0" />
-
-              <div className="flex gap-1.5 shrink-0">
-                {["Male", "Female", "Other"].map((gender) => (
-                  <button
-                    key={gender}
-                    onClick={() => toggleGenderFilter(gender)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
-                      filterGender.includes(gender)
-                        ? "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 shadow-md"
-                        : "bg-background text-muted-foreground border-border hover:border-foreground/20"
-                    }`}
-                  >
-                    {gender}
-                  </button>
-                ))}
-              </div>
-
-              <div className="w-px bg-border shrink-0" />
-
-              <div className="flex gap-1.5 shrink-0">
-                <button
-                  onClick={() => setSortBy("commonCourses")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
-                    sortBy === "commonCourses"
-                      ? "bg-primary/15 text-primary border-primary/30 shadow-md"
-                      : "bg-background text-muted-foreground border-border hover:border-foreground/20"
-                  }`}
-                >
-                  Most Courses
-                </button>
-                <button
-                  onClick={() => setSortBy("name")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 whitespace-nowrap ${
-                    sortBy === "name"
-                      ? "bg-primary/15 text-primary border-primary/30 shadow-md"
-                      : "bg-background text-muted-foreground border-border hover:border-foreground/20"
-                  }`}
-                >
-                  Name A-Z
-                </button>
-              </div>
+              ))}
+            </div>
+  
+            <div className="w-px h-6 bg-gray-200 shrink-0" />
+  
+            {/* Sort Options */}
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={() => setSortBy("commonCourses")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  sortBy === "commonCourses"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Most Courses
+              </button>
+              <button
+                onClick={() => setSortBy("name")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  sortBy === "name"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                A-Z
+              </button>
             </div>
           </div>
         </div>
       </header>
-
-      <main className="container mx-auto px-4 py-6">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Found{" "}
-            <span className="font-semibold text-foreground">
+  
+      <main className="container mx-auto px-6 py-6">
+        {/* Results Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold text-gray-900">
               {filteredStudents.length}
             </span>{" "}
             {filteredStudents.length === 1 ? "student" : "students"}
           </p>
           {selectedUsers.length > 0 && (
-            <Badge variant="default" className="px-3 py-1">
-              {selectedUsers.length} selected
-            </Badge>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                {selectedUsers.length} selected
+              </span>
+              <button
+                onClick={deselectAll}
+                className="text-sm text-blue-500 hover:text-blue-600"
+              >
+                Clear
+              </button>
+            </div>
           )}
         </div>
-
+  
+        {/* Student Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
           {filteredStudents.map((student) => (
             <UserCard
@@ -696,25 +658,30 @@ const SquadFormation = () => {
             />
           ))}
         </div>
-
+  
+        {/* Empty State */}
         {filteredStudents.length === 0 && (
-          <div className="text-center py-16">
-            <Users className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
+          <div className="text-center py-20">
+            <Users className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
               No students found
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Try adjusting your filters or search query
+            <p className="text-sm text-gray-500 mb-4">
+              Try adjusting your filters
             </p>
             {activeFilterCount > 0 && (
-              <Button variant="outline" onClick={clearAllFilters}>
+              <button
+                onClick={clearAllFilters}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+              >
                 Clear All Filters
-              </Button>
+              </button>
             )}
           </div>
         )}
       </main>
-
+  
+      {/* Selected Users Bar */}
       <AnimatePresence>
         {selectedUsers.length > 0 && (
           <SelectedUsersBar
